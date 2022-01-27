@@ -1,0 +1,33 @@
+# This workflow will do a clean install and synthesize a build.
+
+name: Synth
+
+on:
+  pull_request:
+    branches: [ master, develop ]
+
+jobs:
+  synth:
+    runs-on: ubuntu-latest
+
+    env:
+      DEV_ACCESS_KEY_ID: ${{ secrets.DEV_ACCESS_KEY_ID }}
+      DEV_SECRET_ACCESS_KEY: ${{ secrets.DEV_SECRET_ACCESS_KEY }}
+      PROD_ACCESS_KEY_ID: ${{ secrets.PROD_ACCESS_KEY_ID }}
+      PROD_SECRET_ACCESS_KEY: ${{ secrets.PROD_SECRET_ACCESS_KEY }}
+      IS_GITHUB: 'true'
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: echo "BRANCH=${GITHUB_BASE_REF}" >> $GITHUB_ENV
+    - run: npm ci
+    - run: npm run synth
