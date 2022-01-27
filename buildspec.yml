@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 14
+    commands:
+      - npm i -g npm@8
+      - node -v
+      - npm -v
+      - npm ci
+  pre_build:
+    commands:
+      - npm run validate-source-credentials
+  build:
+    commands:
+      - echo "Build started on `date`"
+      - npm run cdk -- deploy --all --require-approval never
+      - echo "Branch ${BRANCH}"
+  post_build:
+    commands:
+      - echo "Build completed on `date`"

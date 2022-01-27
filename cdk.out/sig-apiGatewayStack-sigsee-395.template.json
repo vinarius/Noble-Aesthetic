@@ -1,0 +1,1686 @@
+{
+  "Parameters": {
+    "siguserPoolIdParamsigsee395Parameter": {
+      "Type": "AWS::SSM::Parameter::Value<String>",
+      "Default": "/sig/cognitoStack/userPoolId/sigsee-395"
+    },
+    "BootstrapVersion": {
+      "Type": "AWS::SSM::Parameter::Value<String>",
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+    }
+  },
+  "Resources": {
+    "sigauthorizersigsee3952440797C": {
+      "Type": "AWS::ApiGateway::Authorizer",
+      "Properties": {
+        "Name": "sig-authorizer-sigsee-395",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "Type": "COGNITO_USER_POOLS",
+        "AuthorizerResultTtlInSeconds": 0,
+        "IdentitySource": "method.request.header.Authorization",
+        "ProviderARNs": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":cognito-idp:us-east-1:476324220602:userpool/",
+                {
+                  "Ref": "siguserPoolIdParamsigsee395Parameter"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-authorizer-sigsee-395/Resource"
+      }
+    },
+    "sigapiLogGroupsigsee395A782AB24": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "sig-apiLogGroup-sigsee-395",
+        "RetentionInDays": 731
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-apiLogGroup-sigsee-395/Resource"
+      }
+    },
+    "sigrestApisigsee395FDA7AA9D": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Description": "The rest api for sig - sigsee-395",
+        "Name": "sig-restApi-sigsee-395",
+        "Policy": {
+          "Statement": [
+            {
+              "Action": "execute-api:Invoke",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "*"
+              },
+              "Resource": "*",
+              "Sid": "0"
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Resource"
+      }
+    },
+    "sigrestApisigsee395DeploymentE932CA5Bb3380f4464cc8ad26f2557dd68866b5e": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "Description": "Automatically created by the RestApi construct"
+      },
+      "DependsOn": [
+        "sigforbiddenResponsesigsee39536518BE0",
+        "signotFoundResponsesigsee395693B7CD3",
+        "sigrestApisigsee395loginOPTIONSAF81061B",
+        "sigrestApisigsee395loginPOSTA4EF78A7",
+        "sigrestApisigsee395login936869AA",
+        "sigrestApisigsee395logoutOPTIONS23AD9FBF",
+        "sigrestApisigsee395logoutPOST3652CFEA",
+        "sigrestApisigsee395logout88FED15F",
+        "sigrestApisigsee395OPTIONS4D65248D",
+        "sigrestApisigsee395usersuserIdGET9A9E1E70",
+        "sigrestApisigsee395usersuserIdOPTIONS36E0A3A4",
+        "sigrestApisigsee395usersuserIdPOSTD25C1F5B",
+        "sigrestApisigsee395usersuserId5845DDC0",
+        "sigrestApisigsee395userschangePasswordOPTIONSD6A091C2",
+        "sigrestApisigsee395userschangePasswordPOSTD393AFC7",
+        "sigrestApisigsee395userschangePasswordCD006D45",
+        "sigrestApisigsee395usersconfirmForgotPasswordOPTIONSB2156558",
+        "sigrestApisigsee395usersconfirmForgotPasswordPOST68974725",
+        "sigrestApisigsee395usersconfirmForgotPassword7236CE85",
+        "sigrestApisigsee395usersconfirmSignUpOPTIONS90F291FF",
+        "sigrestApisigsee395usersconfirmSignUpPOSTC9147C7D",
+        "sigrestApisigsee395usersconfirmSignUpA2947675",
+        "sigrestApisigsee395usersforgotPasswordOPTIONS207366E9",
+        "sigrestApisigsee395usersforgotPasswordPOST4E0A4958",
+        "sigrestApisigsee395usersforgotPassword0633C247",
+        "sigrestApisigsee395usersGETE56A16B7",
+        "sigrestApisigsee395usersOPTIONS5CDCD2FC",
+        "sigrestApisigsee395usersrefreshTokenOPTIONS028383BD",
+        "sigrestApisigsee395usersrefreshTokenPOSTD53EB83B",
+        "sigrestApisigsee395usersrefreshToken290BA284",
+        "sigrestApisigsee395usersresendConfirmationOPTIONS781A6FA0",
+        "sigrestApisigsee395usersresendConfirmationPOST7DAC3AC8",
+        "sigrestApisigsee395usersresendConfirmation6FBAD0A0",
+        "sigrestApisigsee395users4DECA256",
+        "sigrestApisigsee395userssignUpOPTIONS1426F147",
+        "sigrestApisigsee395userssignUpPOST68BD027D",
+        "sigrestApisigsee395userssignUp07D52A7C",
+        "sigrestApisigsee395usersverifyTokenOPTIONS28721C55",
+        "sigrestApisigsee395usersverifyTokenPOST49E05861",
+        "sigrestApisigsee395usersverifyToken20A0A56D",
+        "sigunauthorizedResponsesigsee395E762421F"
+      ],
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Deployment/Resource"
+      }
+    },
+    "sigrestApisigsee395DeploymentStagesigsee39554A91931": {
+      "Type": "AWS::ApiGateway::Stage",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AccessLogSetting": {
+          "DestinationArn": {
+            "Fn::GetAtt": [
+              "sigapiLogGroupsigsee395A782AB24",
+              "Arn"
+            ]
+          },
+          "Format": "{\"requestId\":\"$context.requestId\",\"method\":\"$context.httpMethod\",\"errorMessage\":\"$context.error.message\",\"validation\":\"$context.error.validationErrorString\",\"ipAddress\":\"$context.identity.sourceIp\",\"integrationError\":\"$context.integrationErrorMessage\",\"authorizeError\":\"$context.authorize.error\",\"authenticateError\":\"$context.authenticate.error\"}"
+        },
+        "DeploymentId": {
+          "Ref": "sigrestApisigsee395DeploymentE932CA5Bb3380f4464cc8ad26f2557dd68866b5e"
+        },
+        "MethodSettings": [
+          {
+            "DataTraceEnabled": true,
+            "HttpMethod": "*",
+            "LoggingLevel": "ERROR",
+            "ResourcePath": "/*"
+          }
+        ],
+        "StageName": "sigsee-395"
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/DeploymentStage.sigsee-395/Resource"
+      }
+    },
+    "sigrestApisigsee395OPTIONS4D65248D": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "OPTIONS",
+        "ResourceId": {
+          "Fn::GetAtt": [
+            "sigrestApisigsee395FDA7AA9D",
+            "RootResourceId"
+          ]
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'*'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                "method.response.header.Access-Control-Allow-Credentials": "'true'"
+              },
+              "StatusCode": "204"
+            }
+          ],
+          "RequestTemplates": {
+            "application/json": "{ statusCode: 200 }"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+              "method.response.header.Access-Control-Allow-Credentials": true
+            },
+            "StatusCode": "204"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/OPTIONS/Resource"
+      }
+    },
+    "sigrestApisigsee395login936869AA": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "sigrestApisigsee395FDA7AA9D",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "login",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/login/Resource"
+      }
+    },
+    "sigrestApisigsee395loginOPTIONSAF81061B": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "OPTIONS",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395login936869AA"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'*'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                "method.response.header.Access-Control-Allow-Credentials": "'true'"
+              },
+              "StatusCode": "204"
+            }
+          ],
+          "RequestTemplates": {
+            "application/json": "{ statusCode: 200 }"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+              "method.response.header.Access-Control-Allow-Credentials": true
+            },
+            "StatusCode": "204"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/login/OPTIONS/Resource"
+      }
+    },
+    "sigrestApisigsee395loginPOSTA4EF78A7": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395login936869AA"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":lambda:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":function:sig-users-login-sigsee-395/invocations"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/login/POST/Resource"
+      }
+    },
+    "sigrestApisigsee395logout88FED15F": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "sigrestApisigsee395FDA7AA9D",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "logout",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/logout/Resource"
+      }
+    },
+    "sigrestApisigsee395logoutOPTIONS23AD9FBF": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "OPTIONS",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395logout88FED15F"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'*'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                "method.response.header.Access-Control-Allow-Credentials": "'true'"
+              },
+              "StatusCode": "204"
+            }
+          ],
+          "RequestTemplates": {
+            "application/json": "{ statusCode: 200 }"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+              "method.response.header.Access-Control-Allow-Credentials": true
+            },
+            "StatusCode": "204"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/logout/OPTIONS/Resource"
+      }
+    },
+    "sigrestApisigsee395logoutPOST3652CFEA": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395logout88FED15F"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "sigauthorizersigsee3952440797C"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":lambda:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":function:sig-users-logout-sigsee-395/invocations"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/logout/POST/Resource"
+      }
+    },
+    "sigrestApisigsee395users4DECA256": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "sigrestApisigsee395FDA7AA9D",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "users",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/Resource"
+      }
+    },
+    "sigrestApisigsee395usersOPTIONS5CDCD2FC": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "OPTIONS",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395users4DECA256"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'*'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                "method.response.header.Access-Control-Allow-Credentials": "'true'"
+              },
+              "StatusCode": "204"
+            }
+          ],
+          "RequestTemplates": {
+            "application/json": "{ statusCode: 200 }"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+              "method.response.header.Access-Control-Allow-Credentials": true
+            },
+            "StatusCode": "204"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/OPTIONS/Resource"
+      }
+    },
+    "sigrestApisigsee395usersGETE56A16B7": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395users4DECA256"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "sigauthorizersigsee3952440797C"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":lambda:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":function:sig-users-get-sigsee-395/invocations"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/GET/Resource"
+      }
+    },
+    "sigrestApisigsee395userschangePasswordCD006D45": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "sigrestApisigsee395users4DECA256"
+        },
+        "PathPart": "changePassword",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/changePassword/Resource"
+      }
+    },
+    "sigrestApisigsee395userschangePasswordOPTIONSD6A091C2": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "OPTIONS",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395userschangePasswordCD006D45"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'*'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                "method.response.header.Access-Control-Allow-Credentials": "'true'"
+              },
+              "StatusCode": "204"
+            }
+          ],
+          "RequestTemplates": {
+            "application/json": "{ statusCode: 200 }"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+              "method.response.header.Access-Control-Allow-Credentials": true
+            },
+            "StatusCode": "204"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/changePassword/OPTIONS/Resource"
+      }
+    },
+    "sigrestApisigsee395userschangePasswordPOSTD393AFC7": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395userschangePasswordCD006D45"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "sigauthorizersigsee3952440797C"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":lambda:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":function:sig-users-changePassword-sigsee-395/invocations"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/changePassword/POST/Resource"
+      }
+    },
+    "sigrestApisigsee395usersforgotPassword0633C247": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "sigrestApisigsee395users4DECA256"
+        },
+        "PathPart": "forgotPassword",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/forgotPassword/Resource"
+      }
+    },
+    "sigrestApisigsee395usersforgotPasswordOPTIONS207366E9": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "OPTIONS",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395usersforgotPassword0633C247"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'*'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                "method.response.header.Access-Control-Allow-Credentials": "'true'"
+              },
+              "StatusCode": "204"
+            }
+          ],
+          "RequestTemplates": {
+            "application/json": "{ statusCode: 200 }"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+              "method.response.header.Access-Control-Allow-Credentials": true
+            },
+            "StatusCode": "204"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/forgotPassword/OPTIONS/Resource"
+      }
+    },
+    "sigrestApisigsee395usersforgotPasswordPOST4E0A4958": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395usersforgotPassword0633C247"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "sigauthorizersigsee3952440797C"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":lambda:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":function:sig-users-forgotPassword-sigsee-395/invocations"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/forgotPassword/POST/Resource"
+      }
+    },
+    "sigrestApisigsee395usersconfirmForgotPassword7236CE85": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "sigrestApisigsee395users4DECA256"
+        },
+        "PathPart": "confirmForgotPassword",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/confirmForgotPassword/Resource"
+      }
+    },
+    "sigrestApisigsee395usersconfirmForgotPasswordOPTIONSB2156558": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "OPTIONS",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395usersconfirmForgotPassword7236CE85"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'*'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                "method.response.header.Access-Control-Allow-Credentials": "'true'"
+              },
+              "StatusCode": "204"
+            }
+          ],
+          "RequestTemplates": {
+            "application/json": "{ statusCode: 200 }"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+              "method.response.header.Access-Control-Allow-Credentials": true
+            },
+            "StatusCode": "204"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/confirmForgotPassword/OPTIONS/Resource"
+      }
+    },
+    "sigrestApisigsee395usersconfirmForgotPasswordPOST68974725": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395usersconfirmForgotPassword7236CE85"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "sigauthorizersigsee3952440797C"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":lambda:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":function:sig-users-confirmForgotPassword-sigsee-395/invocations"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/confirmForgotPassword/POST/Resource"
+      }
+    },
+    "sigrestApisigsee395usersuserId5845DDC0": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "sigrestApisigsee395users4DECA256"
+        },
+        "PathPart": "{userId}",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/{userId}/Resource"
+      }
+    },
+    "sigrestApisigsee395usersuserIdOPTIONS36E0A3A4": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "OPTIONS",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395usersuserId5845DDC0"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'*'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                "method.response.header.Access-Control-Allow-Credentials": "'true'"
+              },
+              "StatusCode": "204"
+            }
+          ],
+          "RequestTemplates": {
+            "application/json": "{ statusCode: 200 }"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+              "method.response.header.Access-Control-Allow-Credentials": true
+            },
+            "StatusCode": "204"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/{userId}/OPTIONS/Resource"
+      }
+    },
+    "sigrestApisigsee395usersuserIdGET9A9E1E70": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395usersuserId5845DDC0"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "sigauthorizersigsee3952440797C"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":lambda:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":function:sig-users-getById-sigsee-395/invocations"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/{userId}/GET/Resource"
+      }
+    },
+    "sigrestApisigsee395usersuserIdPOSTD25C1F5B": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395usersuserId5845DDC0"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "sigauthorizersigsee3952440797C"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":lambda:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":function:sig-users-updateById-sigsee-395/invocations"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/{userId}/POST/Resource"
+      }
+    },
+    "sigrestApisigsee395userssignUp07D52A7C": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "sigrestApisigsee395users4DECA256"
+        },
+        "PathPart": "signUp",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/signUp/Resource"
+      }
+    },
+    "sigrestApisigsee395userssignUpOPTIONS1426F147": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "OPTIONS",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395userssignUp07D52A7C"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'*'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                "method.response.header.Access-Control-Allow-Credentials": "'true'"
+              },
+              "StatusCode": "204"
+            }
+          ],
+          "RequestTemplates": {
+            "application/json": "{ statusCode: 200 }"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+              "method.response.header.Access-Control-Allow-Credentials": true
+            },
+            "StatusCode": "204"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/signUp/OPTIONS/Resource"
+      }
+    },
+    "sigrestApisigsee395userssignUpPOST68BD027D": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395userssignUp07D52A7C"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":lambda:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":function:sig-users-signUp-sigsee-395/invocations"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/signUp/POST/Resource"
+      }
+    },
+    "sigrestApisigsee395usersconfirmSignUpA2947675": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "sigrestApisigsee395users4DECA256"
+        },
+        "PathPart": "confirmSignUp",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/confirmSignUp/Resource"
+      }
+    },
+    "sigrestApisigsee395usersconfirmSignUpOPTIONS90F291FF": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "OPTIONS",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395usersconfirmSignUpA2947675"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'*'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                "method.response.header.Access-Control-Allow-Credentials": "'true'"
+              },
+              "StatusCode": "204"
+            }
+          ],
+          "RequestTemplates": {
+            "application/json": "{ statusCode: 200 }"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+              "method.response.header.Access-Control-Allow-Credentials": true
+            },
+            "StatusCode": "204"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/confirmSignUp/OPTIONS/Resource"
+      }
+    },
+    "sigrestApisigsee395usersconfirmSignUpPOSTC9147C7D": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395usersconfirmSignUpA2947675"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":lambda:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":function:sig-users-confirmSignUp-sigsee-395/invocations"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/confirmSignUp/POST/Resource"
+      }
+    },
+    "sigrestApisigsee395usersresendConfirmation6FBAD0A0": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "sigrestApisigsee395users4DECA256"
+        },
+        "PathPart": "resendConfirmation",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/resendConfirmation/Resource"
+      }
+    },
+    "sigrestApisigsee395usersresendConfirmationOPTIONS781A6FA0": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "OPTIONS",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395usersresendConfirmation6FBAD0A0"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'*'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                "method.response.header.Access-Control-Allow-Credentials": "'true'"
+              },
+              "StatusCode": "204"
+            }
+          ],
+          "RequestTemplates": {
+            "application/json": "{ statusCode: 200 }"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+              "method.response.header.Access-Control-Allow-Credentials": true
+            },
+            "StatusCode": "204"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/resendConfirmation/OPTIONS/Resource"
+      }
+    },
+    "sigrestApisigsee395usersresendConfirmationPOST7DAC3AC8": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395usersresendConfirmation6FBAD0A0"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":lambda:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":function:sig-users-resendConfirmation-sigsee-395/invocations"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/resendConfirmation/POST/Resource"
+      }
+    },
+    "sigrestApisigsee395usersverifyToken20A0A56D": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "sigrestApisigsee395users4DECA256"
+        },
+        "PathPart": "verifyToken",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/verifyToken/Resource"
+      }
+    },
+    "sigrestApisigsee395usersverifyTokenOPTIONS28721C55": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "OPTIONS",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395usersverifyToken20A0A56D"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'*'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                "method.response.header.Access-Control-Allow-Credentials": "'true'"
+              },
+              "StatusCode": "204"
+            }
+          ],
+          "RequestTemplates": {
+            "application/json": "{ statusCode: 200 }"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+              "method.response.header.Access-Control-Allow-Credentials": true
+            },
+            "StatusCode": "204"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/verifyToken/OPTIONS/Resource"
+      }
+    },
+    "sigrestApisigsee395usersverifyTokenPOST49E05861": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395usersverifyToken20A0A56D"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":lambda:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":function:sig-users-verifyToken-sigsee-395/invocations"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/verifyToken/POST/Resource"
+      }
+    },
+    "sigrestApisigsee395usersrefreshToken290BA284": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "sigrestApisigsee395users4DECA256"
+        },
+        "PathPart": "refreshToken",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/refreshToken/Resource"
+      }
+    },
+    "sigrestApisigsee395usersrefreshTokenOPTIONS028383BD": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "OPTIONS",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395usersrefreshToken290BA284"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'*'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                "method.response.header.Access-Control-Allow-Credentials": "'true'"
+              },
+              "StatusCode": "204"
+            }
+          ],
+          "RequestTemplates": {
+            "application/json": "{ statusCode: 200 }"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Methods": true,
+              "method.response.header.Access-Control-Allow-Credentials": true
+            },
+            "StatusCode": "204"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/refreshToken/OPTIONS/Resource"
+      }
+    },
+    "sigrestApisigsee395usersrefreshTokenPOSTD53EB83B": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "ResourceId": {
+          "Ref": "sigrestApisigsee395usersrefreshToken290BA284"
+        },
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":lambda:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ":function:sig-users-refreshToken-sigsee-395/invocations"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-restApi-sigsee-395/Default/users/refreshToken/POST/Resource"
+      }
+    },
+    "sigapiCloudWatchRolesigsee3959D40BFC0": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "apigateway.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+              ]
+            ]
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-apiCloudWatchRole-sigsee-395/Resource"
+      }
+    },
+    "sigaccountsigsee395": {
+      "Type": "AWS::ApiGateway::Account",
+      "Properties": {
+        "CloudWatchRoleArn": {
+          "Fn::GetAtt": [
+            "sigapiCloudWatchRolesigsee3959D40BFC0",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "sigrestApisigsee395FDA7AA9D"
+      ],
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-account-sigsee-395"
+      }
+    },
+    "sigunauthorizedResponsesigsee395E762421F": {
+      "Type": "AWS::ApiGateway::GatewayResponse",
+      "Properties": {
+        "ResponseType": "UNAUTHORIZED",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "ResponseTemplates": {
+          "application/json": "{\nsuccess: false,\nerror: \"unauthorized\",\nstatusCode: 401\n}"
+        },
+        "StatusCode": "401"
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-unauthorizedResponse-sigsee-395/Resource"
+      }
+    },
+    "sigforbiddenResponsesigsee39536518BE0": {
+      "Type": "AWS::ApiGateway::GatewayResponse",
+      "Properties": {
+        "ResponseType": "ACCESS_DENIED",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "ResponseTemplates": {
+          "application/json": "{\nsuccess: false,\nerror: \"access denied\",\nstatusCode: 403\n}"
+        },
+        "StatusCode": "403"
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-forbiddenResponse-sigsee-395/Resource"
+      }
+    },
+    "signotFoundResponsesigsee395693B7CD3": {
+      "Type": "AWS::ApiGateway::GatewayResponse",
+      "Properties": {
+        "ResponseType": "RESOURCE_NOT_FOUND",
+        "RestApiId": {
+          "Ref": "sigrestApisigsee395FDA7AA9D"
+        },
+        "ResponseTemplates": {
+          "application/json": "{\nsuccess: false,\nerror: \"resource not found\",\nstatusCode: 404\n}"
+        },
+        "StatusCode": "404"
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/sig-notFoundResponse-sigsee-395/Resource"
+      }
+    },
+    "CDKMetadata": {
+      "Type": "AWS::CDK::Metadata",
+      "Properties": {
+        "Analytics": "v2:deflate64:H4sIAAAAAAAA/11Oy07DQAz8lt43hqAeuIYiegFRBXFG7sak2ybr1T6oSpR/x0tIFXHyeGY8njtYw+0Kz6HQzanozB6Gt4j6pDafdocee4rkVU2Bk9ekxPgxoDMtRjrjBYYNt9ZEfg/kd8xdqFI8sDffciQJi00iYuVMZmf4SK7jS082ZnaxSYOWMjeB+fsDBlIvJJFNFv/QtduUfMWV1pwkbDtVFcmxDb/SP2pUHbcBhmdut56Ty5YZj8pgD0PN3fRAptix3zcIT8nqaNjmXmNWX1N0KS6LjMpyQ3AMN1/lGsp7KFfHYEzhpZnpCepp/gA+6OCWhgEAAA=="
+      },
+      "Metadata": {
+        "aws:cdk:path": "sig-apiGatewayStack-sigsee-395/CDKMetadata/Default"
+      }
+    }
+  },
+  "Outputs": {
+    "sigrestApisigsee395Endpoint9E89FE28": {
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Ref": "sigrestApisigsee395FDA7AA9D"
+            },
+            ".execute-api.us-east-1.",
+            {
+              "Ref": "AWS::URLSuffix"
+            },
+            "/",
+            {
+              "Ref": "sigrestApisigsee395DeploymentStagesigsee39554A91931"
+            },
+            "/"
+          ]
+        ]
+      }
+    }
+  },
+  "Rules": {
+    "CheckBootstrapVersion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"
+                  ],
+                  {
+                    "Ref": "BootstrapVersion"
+                  }
+                ]
+              }
+            ]
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+        }
+      ]
+    }
+  }
+}
