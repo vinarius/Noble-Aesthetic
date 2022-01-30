@@ -5,7 +5,7 @@ async function syncHostBucket(): Promise<void> {
 
   const hostBucket = `${project}-hostbucket-${stage}`.toLowerCase();
   
-  await exec(`aws s3 sync dist/client/* s3://${hostBucket}`);
+  await exec(`aws s3 sync dist/client s3://${hostBucket}`);
 }
 
 syncHostBucket().catch(err => {
