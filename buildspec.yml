@@ -9,9 +9,6 @@ phases:
       - node -v
       - npm -v
       - npm ci
-  pre_build:
-    commands:
-      - npm run validate-source-credentials
   build:
     commands:
       - echo "Build started on `date`"

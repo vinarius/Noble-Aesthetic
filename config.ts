@@ -7,10 +7,6 @@ interface StageDefinition {
   };
   description?: string;
   deployMfa: boolean;
-  adminEmail: string;
-  acmCertificateId: string;
-  apiDomainName: string;
-  hostedZoneName: string;
 }
 
 export interface ApplicationDefinition extends StageDefinition {
@@ -18,50 +14,38 @@ export interface ApplicationDefinition extends StageDefinition {
   stage: string;
 }
 
-export const project = 'sig';
-export const repo = 'sig-backend';
+export const project = 'noble';
+export const repo = 'noble-aesthetic';
 
 export const stages: StageDefinition[] = [
   {
     branch: 'individual',
-    alias: 'sigsee-dev',
+    alias: 'noble-dev',
     env: {
-      account: '476324220602',
+      account: '396993419739',
       region: 'us-east-1'
     },
     description: 'An ephemeral stage devs can use for creating isolated resources during development.',
-    deployMfa: true,
-    adminEmail: 'mark@itserv.io',
-    acmCertificateId: '',
-    apiDomainName: '',
-    hostedZoneName: ''
+    deployMfa: true
   },
   {
     branch: 'develop',
-    alias: 'sigsee-dev',
+    alias: 'noble-dev',
     env: {
-      account: '476324220602',
+      account: '396993419739',
       region: 'us-east-1'
     },
-    description: 'The Sig AWS dev account',
-    deployMfa: true,
-    adminEmail: 'mark@itserv.io',
-    acmCertificateId: '05902979-b41e-4919-91c3-ae58b10f0e92',
-    apiDomainName: 'api.dev.sig-see.com',
-    hostedZoneName: 'dev.sig-see.com'
+    description: 'The Noble Aesthetic AWS dev account',
+    deployMfa: true
   },
   {
     branch: 'master',
-    alias: 'sigsee-prod',
+    alias: 'noble-prod',
     env: {
-      account: '597119195378',
+      account: '210844447961',
       region: 'us-east-1'
     },
-    description: 'The Sig AWS prod account',
-    deployMfa: true,
-    adminEmail: 'mark@itserv.io', // TODO: need this
-    acmCertificateId: 'c422ceab-130b-4774-94b1-2f4948697ef4',
-    apiDomainName: 'api.sig-see.com',
-    hostedZoneName: 'sig-see.com'
+    description: 'The Noble Aesthetic AWS prod account',
+    deployMfa: true
   }
 ];

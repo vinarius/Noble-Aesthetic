@@ -35,7 +35,7 @@ export class CICDStack extends Stack {
         }
       },
       source: Source.gitHub({
-        owner: 'Internal-Tech-Services',
+        owner: 'vinarius',
         repo,
         branchOrRef: branch,
         webhook: true,
@@ -58,8 +58,7 @@ export class CICDStack extends Stack {
               new PolicyStatement({
                 effect: Effect.ALLOW,
                 actions: [
-                  'codebuild:ListSourceCredentials',
-                  'secretsmanager:GetSecretValue'
+                  'codebuild:ListSourceCredentials'
                 ],
                 resources: ['*']
               })
