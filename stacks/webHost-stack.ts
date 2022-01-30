@@ -28,6 +28,7 @@ export class WebHostStack extends Stack {
         }
       ],
       enforceSSL: true,
+      bucketName: `${project}-hostbucket-${stage}`.toLowerCase(),
       removalPolicy: stage === 'dev' || stage === 'prod' ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
       websiteIndexDocument: 'index.html'
     });

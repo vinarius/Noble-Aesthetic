@@ -13,6 +13,7 @@
     "diff": "npm run cdk diff",
     "lint": "eslint . --ext .ts",
     "postinstall": "cd client && npm i",
+    "syncHostBucket": "npm run ts-node bin/syncHostBucket",
     "synth": "run-p \"ts-node bin/synth\"",
     "test": "jest --coverage --passWithNoTests",
     "ts-node": "ts-node",

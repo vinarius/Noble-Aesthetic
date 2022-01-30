@@ -17,5 +17,5 @@ phases:
       - echo "Branch ${BRANCH}"
   post_build:
     commands:
-      - aws s3 sync dist/client/* s3://${HOST_BUCKET_NAME}
+      - npm run syncHostBucket
       - echo "Build completed on `date`"
