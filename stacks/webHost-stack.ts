@@ -1,5 +1,5 @@
 import { App, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
-import { Distribution } from 'aws-cdk-lib/aws-cloudfront';
+import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { BlockPublicAccess, Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
@@ -36,8 +36,10 @@ export class WebHostStack extends Stack {
 
     const cloudfrontDist = new Distribution(this, `${project}-siteDistribution-${stage}`, {
       defaultBehavior: {
-        origin: new S3Origin(hostBucket)
-      }
+        origin: new S3Origin(hostBucket),
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+      },
+      defaultRootObject: 'index.html'
     });
 
     new BucketDeployment(this, `${project}-bucketDeploy-${stage}`, {
