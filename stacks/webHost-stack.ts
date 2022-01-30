@@ -1,7 +1,9 @@
 import { App, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { Distribution } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
-import { Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
+import { BlockPublicAccess, Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
+import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
+import { resolve } from 'path';
 
 interface WebHostStackProps extends StackProps {
   project: string;
@@ -28,21 +30,22 @@ export class WebHostStack extends Stack {
         }
       ],
       enforceSSL: true,
-      bucketName: `${project}-hostbucket-${stage}`.toLowerCase(),
       removalPolicy: stage === 'dev' || stage === 'prod' ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
-      websiteIndexDocument: 'index.html'
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL
     });
 
-    process.env.HOST_BUCKET_NAME = hostBucket.bucketName; // TODO: how to sync post deploy??
-
-    const s3Origin = new S3Origin(hostBucket);
-
-    new Distribution(this, `${project}-siteDistribution-${stage}`, {
+    const cloudfrontDist = new Distribution(this, `${project}-siteDistribution-${stage}`, {
       defaultBehavior: {
-        origin: s3Origin
+        origin: new S3Origin(hostBucket)
       }
     });
 
-    
+    new BucketDeployment(this, `${project}-bucketDeploy-${stage}`, {
+      destinationBucket: hostBucket,
+      sources: [
+        Source.asset(resolve(__dirname, '..', 'dist', 'client'))
+      ],
+      distribution: cloudfrontDist
+    });
   }
 }
