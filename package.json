@@ -4,7 +4,7 @@
   "description": "The custom, full stack noble aesthetic website.",
   "scripts": {
     "aws-token": "npm run ts-node bin/aws-token",
-    "build": "run-s clean synth build:client",
+    "build": "run-s clean build:client",
     "build:client": "cd client && npm run build",
     "clean": "cross-env-shell \"rm -rf cdk.out bin/*.js coverage dist lib/*.js models/*.js src/**/*.js stacks/*.js test/*.js config.js\"",
     "cdk": "cdk",

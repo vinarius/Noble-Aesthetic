@@ -12,8 +12,10 @@ phases:
   build:
     commands:
       - echo "Build started on `date`"
+      - npm run build
       - npm run cdk -- deploy --all --require-approval never
       - echo "Branch ${BRANCH}"
   post_build:
     commands:
+      - aws s3 sync dist/client/* s3://${HOST_BUCKET_NAME}
       - echo "Build completed on `date`"
