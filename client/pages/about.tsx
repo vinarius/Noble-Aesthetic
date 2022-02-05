@@ -1,24 +1,24 @@
 import Head from 'next/head';
 import React, { ReactElement } from 'react';
 
-import styles from '../styles/Home.module.css';
+import styles from '../styles/About.module.css';
 
 export default function Home(): ReactElement {
   return (
     <>
       <Head>
-        <title>Noble Aesthetic - Home</title>
-        <meta name='description' content='Home page' />
+        <title>Noble Aesthetic - About</title>
+        <meta name='description' content='About page' />
         <link rel='icon' href='/favicon.ico' />
       </Head>
 
       <main className='w-full'>
         {/* 1 */}
         <div
-          className={`${styles['h-30rem']} bg-gray-600 text-white flex items-center`}>
+          className={`h-32 bg-gray-600 text-white flex items-center`}>
           <div className='grid grid-flow-col grid-cols-2 grid-rows-2 ml-10'>
             <p className='text-4xl'>
-              Welcome to Noble Aesthetic
+              The about page
             </p>
             <p className='text-xl'>
               Lorem ipsum dolor sit amet.
@@ -27,17 +27,14 @@ export default function Home(): ReactElement {
         </div>
 
         {/* 2 */}
-        <div className={`${styles['h-30rem']} flex justify-around items-center`}>
+        <div className={`${styles['h-30rem']} flex justify-end items-end`}>
           <img
-            className='rounded'
+            className='w-full h-full'
             alt='placeholder image'
-            src='https://via.placeholder.com/300'
+            src='./office-1.jpg'
           />
-          <div>
-            <p className='text-4xl'>
-              Lorem ipsum dolor sit amet. 2
-            </p>
-            <p className='text-xl'>
+          <div className={`absolute bg-white w-full flex justify-end items-center ${styles['triangle-border']}`}>
+            <p className='text-4xl mr-10'>
               Lorem ipsum dolor sit amet.
             </p>
           </div>
