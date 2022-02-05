@@ -6,3 +6,4 @@ scripts
 .eslintrc.js
 cdk.out
 jest.config.js
+client
