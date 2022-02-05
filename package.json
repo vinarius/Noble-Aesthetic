@@ -10,6 +10,7 @@
     "cdk": "cdk",
     "deploy": "run-s \"ts-node bin/deploy\"",
     "destroy": "npm run ts-node bin/destroy",
+    "dev": "cd client && npm run dev",
     "diff": "npm run cdk diff",
     "lint": "eslint . --ext .ts",
     "postinstall": "cd client && npm i",
