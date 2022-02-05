@@ -1,8 +1,6 @@
 import Head from 'next/head';
 import React, { ReactElement } from 'react';
 
-import Image from 'next/image';
-
 export default function Home(): ReactElement {
   return (
     <>
@@ -27,12 +25,10 @@ export default function Home(): ReactElement {
 
         {/* 2 */}
         <div className='h-96 flex justify-around items-center'>
-          <Image
+          <img
             className='rounded'
             alt='placeholder image'
             src='https://via.placeholder.com/300'
-            width={300}
-            height={300}
           />
           <div>
             <p className='text-4xl'>
@@ -54,24 +50,20 @@ export default function Home(): ReactElement {
               Lorem ipsum dolor sit amet.
             </p>
           </div>
-          <Image
+          <img
             className='rounded'
             alt='placeholder image'
             src='https://via.placeholder.com/300'
-            width={300}
-            height={300}
           />
         </div>
 
         {/* 4 */}
         <div className='flex justify-around items-center mt-20 mb-20'>
           <div>
-            <Image
+            <img
               className='rounded'
               alt='placeholder image'
               src='https://via.placeholder.com/300'
-              width={300}
-              height={300}
             />
             <div>
               <p className='text-4xl'>
@@ -83,12 +75,10 @@ export default function Home(): ReactElement {
             </div>
           </div>
           <div>
-            <Image
+            <img
               className='rounded'
               alt='placeholder image'
               src='https://via.placeholder.com/300'
-              width={300}
-              height={300}
             />
             <div>
               <p className='text-4xl'>
