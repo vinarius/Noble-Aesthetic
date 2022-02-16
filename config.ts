@@ -7,11 +7,13 @@ interface StageDefinition {
   };
   description?: string;
   deployMfa: boolean;
+  domainName: string;
 }
 
 export interface ApplicationDefinition extends StageDefinition {
   project: string;
   stage: string;
+  isStagingEnv: boolean;
 }
 
 export const project = 'noble';
@@ -26,7 +28,8 @@ export const stages: StageDefinition[] = [
       region: 'us-east-1'
     },
     description: 'An ephemeral stage devs can use for creating isolated resources during development.',
-    deployMfa: true
+    deployMfa: true,
+    domainName: ''
   },
   {
     branch: 'develop',
@@ -36,7 +39,8 @@ export const stages: StageDefinition[] = [
       region: 'us-east-1'
     },
     description: 'The Noble Aesthetic AWS dev account',
-    deployMfa: true
+    deployMfa: true,
+    domainName: 'dev.nobleaesthetic.com'
   },
   {
     branch: 'master',
@@ -46,6 +50,7 @@ export const stages: StageDefinition[] = [
       region: 'us-east-1'
     },
     description: 'The Noble Aesthetic AWS prod account',
-    deployMfa: true
+    deployMfa: true,
+    domainName: 'nobleaesthetic.com'
   }
 ];
