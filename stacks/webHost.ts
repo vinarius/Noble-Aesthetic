@@ -2,6 +2,8 @@ import { App, Aws, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
+import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
+import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { BlockPublicAccess, Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
 import { resolve } from 'path';
@@ -55,6 +57,15 @@ export class WebHostStack extends Stack {
     });
 
     distribution.applyRemovalPolicy(removalPolicy);
+
+    if (isStagingEnv) {
+      const zone = HostedZone.fromLookup(this, `${project}-hostedZoneLookup-${stage}`, { domainName });
+
+      new ARecord(this, `${project}-aRecord-${stage}`, {
+        zone,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(distribution))
+      });
+    }
 
     new BucketDeployment(this, `${project}-bucketDeploy-${stage}`, {
       destinationBucket: hostBucket,
