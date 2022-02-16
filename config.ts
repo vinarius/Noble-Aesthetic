@@ -8,6 +8,7 @@ interface StageDefinition {
   description?: string;
   deployMfa: boolean;
   domainName: string;
+  nsRecordValues: string[];
 }
 
 export interface ApplicationDefinition extends StageDefinition {
@@ -29,7 +30,8 @@ export const stages: StageDefinition[] = [
     },
     description: 'An ephemeral stage devs can use for creating isolated resources during development.',
     deployMfa: true,
-    domainName: ''
+    domainName: '',
+    nsRecordValues: []
   },
   {
     branch: 'develop',
@@ -40,7 +42,13 @@ export const stages: StageDefinition[] = [
     },
     description: 'The Noble Aesthetic AWS dev account',
     deployMfa: true,
-    domainName: 'dev.nobleaesthetic.com'
+    domainName: 'dev.nobleaesthetic.com',
+    nsRecordValues: [
+      'ns-83.awsdns-10.com',
+      'ns-1471.awsdns-55.org',
+      'ns-1797.awsdns-32.co.uk',
+      'ns-796.awsdns-35.net'
+    ]
   },
   {
     branch: 'master',
@@ -51,6 +59,12 @@ export const stages: StageDefinition[] = [
     },
     description: 'The Noble Aesthetic AWS prod account',
     deployMfa: true,
-    domainName: 'nobleaesthetic.com'
+    domainName: 'nobleaesthetic.com',
+    nsRecordValues: [
+      'ns-83.awsdns-10.com',
+      'ns-1471.awsdns-55.org',
+      'ns-1797.awsdns-32.co.uk',
+      'ns-796.awsdns-35.net'
+    ]
   }
 ];

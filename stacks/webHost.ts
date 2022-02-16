@@ -2,7 +2,7 @@ import { App, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
-import { HostedZone } from 'aws-cdk-lib/aws-route53';
+import { HostedZone, NsRecord } from 'aws-cdk-lib/aws-route53';
 import { BlockPublicAccess, Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
 import { resolve } from 'path';
@@ -11,6 +11,7 @@ import { NobleStackProps } from '../models/cloudResources';
 
 interface WebHostStackProps extends NobleStackProps {
   domainName: string;
+  nsRecordValues: string[];
 }
 
 export class WebHostStack extends Stack {
@@ -21,7 +22,8 @@ export class WebHostStack extends Stack {
       project,
       stage,
       isStagingEnv,
-      domainName
+      domainName,
+      nsRecordValues
     } = props;
 
     const removalPolicy = isStagingEnv ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY;
@@ -45,6 +47,12 @@ export class WebHostStack extends Stack {
     if (isStagingEnv) {
       hostedZone = new HostedZone(this, `${project}-hostedZone-${stage}`, {
         zoneName: domainName
+      });
+
+      new NsRecord(this, `${project}-nsRecord-${stage}`, {
+        values: [...nsRecordValues],
+        zone: hostedZone,
+        recordName: `${project}-nsRecord-${stage}`
       });
 
       certificate = new Certificate(this, `${project}-certificate-${stage}`, {
