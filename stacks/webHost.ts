@@ -1,13 +1,16 @@
-import { App, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import { App, RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
+import { HostedZone } from 'aws-cdk-lib/aws-route53';
 import { BlockPublicAccess, Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
 import { resolve } from 'path';
 
-interface WebHostStackProps extends StackProps {
-  project: string;
-  stage: string;
+import { NobleStackProps } from '../models/cloudResources';
+
+interface WebHostStackProps extends NobleStackProps {
+  domainName: string;
 }
 
 export class WebHostStack extends Stack {
@@ -16,8 +19,12 @@ export class WebHostStack extends Stack {
 
     const {
       project,
-      stage
+      stage,
+      isStagingEnv,
+      domainName
     } = props;
+
+    const removalPolicy = isStagingEnv ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY;
 
     const hostBucket = new Bucket(this, `${project}-hostBucket-${stage}`, {
       autoDeleteObjects: stage !== 'dev' && stage !== 'prod',
@@ -30,24 +37,40 @@ export class WebHostStack extends Stack {
         }
       ],
       enforceSSL: true,
-      removalPolicy: stage === 'dev' || stage === 'prod' ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
+      removalPolicy,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL
     });
 
-    const cloudfrontDist = new Distribution(this, `${project}-siteDistribution-${stage}`, {
+    let hostedZone, certificate;
+    if (isStagingEnv) {
+      hostedZone = new HostedZone(this, `${project}-hostedZone-${stage}`, {
+        zoneName: domainName
+      });
+
+      certificate = new Certificate(this, `${project}-certificate-${stage}`, {
+        domainName,
+        validation: CertificateValidation.fromDns(hostedZone)
+      });
+    }
+
+    const distribution = new Distribution(this, `${project}-siteDistribution-${stage}`, {
       defaultBehavior: {
         origin: new S3Origin(hostBucket),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
       },
-      defaultRootObject: 'index.html'
+      defaultRootObject: 'index.html',
+      ...isStagingEnv && certificate,
+      ...isStagingEnv && { domainNames: [ domainName ] }
     });
+
+    distribution.applyRemovalPolicy(removalPolicy);
 
     new BucketDeployment(this, `${project}-bucketDeploy-${stage}`, {
       destinationBucket: hostBucket,
       sources: [
         Source.asset(resolve(__dirname, '..', 'dist', 'client'))
       ],
-      distribution: cloudfrontDist
+      distribution
     });
   }
 }
