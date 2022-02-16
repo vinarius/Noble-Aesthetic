@@ -13,8 +13,7 @@ async function buildInfrastructure(): Promise<void> {
     env,
     branch,
     isStagingEnv,
-    domainName,
-    nsRecordValues
+    domainName
   } = await getAppConfig();
 
   const app = new App();
@@ -28,8 +27,7 @@ async function buildInfrastructure(): Promise<void> {
     stage,
     terminationProtection,
     isStagingEnv,
-    domainName,
-    nsRecordValues
+    domainName
   });
 
   new CICDStack(app, `${project}-CICDStack-${stage}`, {
