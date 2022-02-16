@@ -28,6 +28,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - run: npm i -g npm@8
     - run: echo "BRANCH=${GITHUB_BASE_REF}" >> $GITHUB_ENV
     - run: npm ci
     - run: npm run synth
