@@ -59,7 +59,7 @@ export class WebHostStack extends Stack {
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
       },
       defaultRootObject: 'index.html',
-      ...isStagingEnv && certificate,
+      ...isStagingEnv && { certificate },
       ...isStagingEnv && { domainNames: [ domainName ] }
     });
 
