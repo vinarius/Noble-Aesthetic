@@ -12,12 +12,12 @@ export default function Home(): ReactElement {
 
       <main className='w-full'>
 
-      <div className='flex flex-col justify-center items-center h-screen'>
-        <p className='text-xl md:text-6xl my-3'>Welcome to Noble Aesthetic</p>
-        <p className='text-xl md:text-6xl my-3'>Coming Soon!</p>
-      </div>
+        <div className='flex flex-col justify-center items-center h-screen'>
+          <p className='text-xl md:text-6xl my-3'>Welcome to Noble Aesthetic</p>
+          <p className='text-xl md:text-6xl my-3'>Coming Soon!</p>
+        </div>
 
-      {/*         
+        {/*         
         <div className='h-96 bg-gray-600 text-white flex items-center'>
           <div className='grid grid-flow-col grid-cols-2 grid-rows-2 ml-10'>
             <p className='text-4xl'>
