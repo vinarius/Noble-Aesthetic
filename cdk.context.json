@@ -1,1 +1,6 @@
-{}
+{
+  "hosted-zone:account=396993419739:domainName=dev.nobleaesthetic.com:region=us-east-1": {
+    "Id": "/hostedzone/Z03083141OBLD9HW45IC",
+    "Name": "dev.nobleaesthetic.com."
+  }
+}
