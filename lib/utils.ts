@@ -1,11 +1,20 @@
 import { resolve } from 'path';
-import { ChildProcessWithoutNullStreams, exec as EXEC } from 'child_process';
+import { ChildProcessWithoutNullStreams, exec as EXEC, spawnSync } from 'child_process';
 import { StandardRetryStrategy } from '@aws-sdk/middleware-retry';
 import {
   ApplicationDefinition,
   project,
   stages
 } from '../config';
+
+export function spawn(command: string) {
+  spawnSync(command, {
+    shell: true,
+    stdio: 'inherit'
+  });
+
+  console.log();
+}
 
 export function exec(
   command: string,

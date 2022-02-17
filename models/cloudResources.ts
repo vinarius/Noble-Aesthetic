@@ -5,4 +5,5 @@ export interface NobleStackProps extends StackProps {
   stage: string;
   isStagingEnv: boolean;
   branch?: string;
+  stack: string;
 }

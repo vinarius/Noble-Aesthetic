@@ -1,6 +1,6 @@
 import { spawn, getAppConfig } from '../lib/utils';
 
-export async function deploy(): Promise<void> {
+export async function hotswap(): Promise<void> {
   const { alias, branch, deployMfa } = await getAppConfig();
   const profile: string = deployMfa ? `${alias}-token` : alias;
   console.log();
@@ -8,10 +8,10 @@ export async function deploy(): Promise<void> {
   console.log(`>>> Using profile ${profile}`);
   console.log();
   const stackName: string = process.env.STACK || '--all';
-  spawn(`npm run cdk -- deploy ${stackName} --require-approval never --profile ${profile} --outputs-file ./dist/cdk-outputs.json`);
+  spawn(`npm run cdk -- deploy ${stackName} --hotswap --require-approval never --profile ${profile} --outputs-file ./dist/cdk-outputs.json`);
 }
 
-deploy().catch(err => {
+hotswap().catch(err => {
   console.error(err);
   process.exit(1);
 });

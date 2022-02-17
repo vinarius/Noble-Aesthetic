@@ -9,6 +9,7 @@ interface StageDefinition {
   deployMfa: boolean;
   domainName: string;
   certificateId: string;
+  apiDomainName: string;
 }
 
 export interface ApplicationDefinition extends StageDefinition {
@@ -31,7 +32,8 @@ export const stages: StageDefinition[] = [
     description: 'An ephemeral stage devs can use for creating isolated resources during development.',
     deployMfa: true,
     domainName: '',
-    certificateId: ''
+    certificateId: '',
+    apiDomainName: ''
   },
   {
     branch: 'develop',
@@ -43,7 +45,8 @@ export const stages: StageDefinition[] = [
     description: 'The Noble Aesthetic AWS dev account',
     deployMfa: true,
     domainName: 'dev.nobleaesthetic.com',
-    certificateId: '62273e83-cb85-4707-b443-b882870dda08'
+    certificateId: '62273e83-cb85-4707-b443-b882870dda08',
+    apiDomainName: 'api.dev.nobleaesthetic.com'
   },
   {
     branch: 'master',
@@ -55,6 +58,7 @@ export const stages: StageDefinition[] = [
     description: 'The Noble Aesthetic AWS prod account',
     deployMfa: true,
     domainName: 'nobleaesthetic.com',
-    certificateId: '0fbc6320-e716-4663-86c2-7b7517755c95'
+    certificateId: '0fbc6320-e716-4663-86c2-7b7517755c95',
+    apiDomainName: 'api.nobleaesthetic.com'
   }
 ];
