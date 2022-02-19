@@ -13,7 +13,6 @@ export default function Home(): ReactElement {
       </Head>
 
       <main className='w-full'>
-        {/* 1 */}
         <div
           className={`${styles['h-30rem']} bg-gray-600 text-white flex items-center`}>
           <div className='grid grid-flow-col grid-cols-2 grid-rows-2 ml-10'>
@@ -26,7 +25,6 @@ export default function Home(): ReactElement {
           </div>
         </div>
 
-        {/* 2 */}
         <div className={`${styles['h-30rem']} flex justify-around items-center`}>
           <img
             className='rounded'
@@ -43,7 +41,6 @@ export default function Home(): ReactElement {
           </div>
         </div>
 
-        {/* 3 */}
         <div className={`${styles['h-30rem']} bg-gray-600 text-white flex justify-around items-center`}>
           <div>
             <p className='text-4xl'>
@@ -60,7 +57,6 @@ export default function Home(): ReactElement {
           />
         </div>
 
-        {/* 4 */}
         <div className={`${styles['h-30rem']} flex justify-around items-center mt-20 mb-20`}>
           <div>
             <img
@@ -93,6 +89,7 @@ export default function Home(): ReactElement {
             </div>
           </div>
         </div>
+
       </main>
     </>
   );

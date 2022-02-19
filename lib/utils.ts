@@ -1,11 +1,20 @@
 import { resolve } from 'path';
-import { ChildProcessWithoutNullStreams, exec as EXEC } from 'child_process';
+import { ChildProcessWithoutNullStreams, exec as EXEC, spawnSync } from 'child_process';
 import { StandardRetryStrategy } from '@aws-sdk/middleware-retry';
 import {
   ApplicationDefinition,
   project,
   stages
 } from '../config';
+
+export function spawn(command: string) {
+  spawnSync(command, {
+    shell: true,
+    stdio: 'inherit'
+  });
+
+  console.log();
+}
 
 export function exec(
   command: string,
@@ -56,7 +65,7 @@ export const retryOptions = {
   retryStrategy: new StandardRetryStrategy(async () => maxRetryAttempts)
 };
 
-export function validateEnvVars(envVars: string[]): Error|void {
+export function validateEnvVars(envVars: string[]): Error | void {
   const unsetEnvVars: string[] = [];
 
   for (const variable of envVars)
@@ -84,12 +93,15 @@ export async function getAppConfig(): Promise<ApplicationDefinition> {
   const config = stages.find(stage => stage.branch === branch) ?? stages[0];
   if (!config.env.account) throw new Error('>>> No account prop found in stage definition.');
 
+  const stage = branch === 'master' ? 'prod' :
+    branch === 'develop' ? 'dev' :
+      branch.includes('/') ? branch.split('/').reverse()[0] :
+        branch; // This paradigm allows for ephemeral resource creation for team development.
+
   return {
     ...config,
-    stage: branch === 'master' ? 'prod' :
-      branch === 'develop' ? 'dev' :
-        branch.includes('/') ? branch.split('/').reverse()[0] :
-          branch, // This paradigm allows for ephemeral resource creation for team development.
+    isStagingEnv: stage === 'prod' || stage === 'dev',
+    stage,
     branch,
     project
   };

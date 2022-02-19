@@ -1,18 +1,13 @@
-import { Fn, Stack, StackProps } from 'aws-cdk-lib';
+import { Aws, Stack } from 'aws-cdk-lib';
 import { EventAction, FilterGroup, LinuxBuildImage, Project, Source } from 'aws-cdk-lib/aws-codebuild';
 import { Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
 import { repo } from '../config';
-
-interface SigCICDProps extends StackProps {
-  project: string;
-  stage: string;
-  branch: string;
-}
+import { NobleStackProps } from '../models/cloudResources';
 
 export class CICDStack extends Stack {
-  constructor(scope: Construct, id: string, props: SigCICDProps) {
+  constructor(scope: Construct, id: string, props: NobleStackProps) {
     super(scope, id, props);
 
     const {
@@ -40,8 +35,8 @@ export class CICDStack extends Stack {
         branchOrRef: branch,
         webhook: true,
         webhookFilters: [
-          FilterGroup.inEventOf(EventAction.PUSH).andBranchIs(branch),
-          FilterGroup.inEventOf(EventAction.PULL_REQUEST_MERGED).andBranchIs(branch)
+          FilterGroup.inEventOf(EventAction.PUSH).andBranchIs(branch as string),
+          FilterGroup.inEventOf(EventAction.PULL_REQUEST_MERGED).andBranchIs(branch as string)
         ]
       }),
       role: new Role(this, `${project}-codeBuildRole-${stage}`, {
@@ -53,14 +48,9 @@ export class CICDStack extends Stack {
               new PolicyStatement({
                 effect: Effect.ALLOW,
                 actions: ['sts:assumeRole'],
-                resources: [Fn.sub('arn:aws:iam::${AWS::AccountId}:role/cdk-hnb659fds-*')]
-              }),
-              new PolicyStatement({
-                effect: Effect.ALLOW,
-                actions: [
-                  'codebuild:ListSourceCredentials'
-                ],
-                resources: ['*']
+                resources: [
+                  `arn:${Aws.PARTITION}:iam::${Aws.ACCOUNT_ID}:role/cdk-hnb659fds-*`
+                ]
               })
             ]
           })
