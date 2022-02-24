@@ -44,5 +44,13 @@ module.exports = {
     '@typescript-eslint/no-inferrable-types': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
     'no-unused-vars': 'off'
-  }
+  },
+  overrides: [
+    {
+      files: ['**/*.spec.ts', '!**/*.integration.spec.ts'],
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off' // Allows for dynamic module importing to test for env variable branch coverage
+      }
+    }
+  ]
 };

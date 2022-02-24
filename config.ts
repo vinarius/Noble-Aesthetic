@@ -16,6 +16,7 @@ export interface ApplicationDefinition extends StageDefinition {
   project: string;
   stage: string;
   isStagingEnv: boolean;
+  profile: string;
 }
 
 export const project = 'noble';

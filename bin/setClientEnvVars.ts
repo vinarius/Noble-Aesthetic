@@ -1,7 +1,7 @@
 import { existsSync, rmSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 
-import { getAppConfig } from '../lib/utils';
+import { getAppConfig } from '../lib/getAppConfig';
 
 async function setEnvVars(): Promise<void> {
   const { stage } = await getAppConfig();
