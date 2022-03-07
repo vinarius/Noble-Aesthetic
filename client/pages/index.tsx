@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import React, { ReactElement } from 'react';
+import Foo from '../components/foo';
 
 export default function Home(): ReactElement {
 
@@ -8,7 +9,6 @@ export default function Home(): ReactElement {
       <Head>
         <title>Noble Aesthetic</title>
         <meta name='description' content='Welcome page' />
-        {/* <link rel='icon' href='/favicon.ico' /> */}
       </Head>
 
       <main className='w-full'>
@@ -17,6 +17,8 @@ export default function Home(): ReactElement {
           <p className='text-xl md:text-6xl my-3'>Welcome to Noble Aesthetic</p>
           <p className='text-xl md:text-6xl my-3'>Coming Soon!</p>
         </div>
+
+        <Foo />
 
         {/*         
         <div className='h-96 bg-gray-600 text-white flex items-center'>

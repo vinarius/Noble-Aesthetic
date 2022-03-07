@@ -7,6 +7,7 @@ import { CICDStack } from '../stacks/CICD';
 import { WebHostStack } from '../stacks/webHost';
 import { ApiStack } from '../stacks/api';
 import { UsersStack } from '../stacks/users';
+import { validateAwsProfile } from '../lib/validateAwsProfile';
 
 async function buildInfrastructure(): Promise<void> {
   const { IS_JEST, IS_CODEBUILD } = process.env;
