@@ -20,8 +20,13 @@ export const authSlice = createSlice({
   name: 'authSlice',
   initialState,
   reducers: {
-    getComments: (state, action: PayloadAction<Comment[]>) => {
-      state.comments = [...state.comments, ...action.payload]
+    addComment: (state, action: PayloadAction<Comment>) => {
+      state.comments = [...state.comments, action.payload];
+    },
+    removeComment: (state, action: PayloadAction<number>) => {
+      state.comments = state.comments.filter(comment => comment.id !== action.payload);
     }
   }
 });
+
+export const { addComment, removeComment } = authSlice.actions;
