@@ -84,7 +84,7 @@ export class UsersStack extends Stack {
 
     webAppClient.applyRemovalPolicy(removalPolicy);
 
-    new CfnOutput(this, `${project}-mobileClientId-${stage}`, { value: webAppClient.userPoolClientId });
+    new CfnOutput(this, `${project}-webAppClientIdOutput-${stage}`, { value: webAppClient.userPoolClientId });
 
     /**
      * DynamoDB Section

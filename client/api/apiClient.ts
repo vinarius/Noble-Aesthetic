@@ -1,51 +1,71 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { getUsersApi } from './usersApi';
 
 export class ApiClient {
   private client: AxiosInstance;
-  private config?: AxiosRequestConfig;
+  private authToken: string = '';
+  private config: AxiosRequestConfig = { headers: {} };
 
   constructor (token?: string) {
     this.client = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_APIDOMAINNAME,
+      baseURL: `https://${process.env.NEXT_PUBLIC_APIDOMAINNAME}/`,
       headers: {
         Accept: 'application/json',
         ...token && { Authorization: token } 
       }
     });
 
-    this.config = {
-      headers: {},
-    };
+    if (token) this.authToken = token;
+  }
+
+  public authenticate(authToken?: string) {
+    this.config.headers!.Authorization = authToken ?? this.authToken;
+    return this;
   }
 
   public async get<T>(route: string, options?: AxiosRequestConfig): Promise<T> {
-    return await this.client.get(route, {
+    const { data } = await this.client.get(encodeURIComponent(route), {
       ...this.config,
       ...options
-    }).then(res => res.data);
+    });
+
+    return data;
   }
 
   public async post<T>(route: string, body: any, options?: AxiosRequestConfig): Promise<T> {
-    return await this.client.post(route, body, {
+    const { data } = await this.client.post(encodeURIComponent(route), body, {
       ...this.config,
       ...options
-    }).then(res => res.data);
+    });
+
+    return data;
   }
 
   public async put<T>(route: string, body: any, options?: AxiosRequestConfig): Promise<T> {
-    return await this.client.put(route, body, {
+    const { data } = await this.client.put(encodeURIComponent(route), body, {
       ...this.config,
       ...options
-    }).then(res => res.data);
+    });
+
+    return data;
   }
 
   public async delete<T>(route: string, body: any, options?: AxiosRequestConfig): Promise<T> {
-    return await this.client.delete(route, {
+    const { data } = await this.client.delete(encodeURIComponent(route), {
+      data: { ...body },
       ...this.config,
-      data: {
-        ...body
-      },
       ...options
-    }).then(res => res.data);
+    });
+
+    return data;
   }
+}
+
+export function buildApiClient() {
+  const api = new ApiClient(); // TODO: read auth token from redux store
+
+  return {
+    axios: api,
+    users: getUsersApi(api)
+  };
 }

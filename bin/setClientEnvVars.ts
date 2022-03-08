@@ -1,19 +1,23 @@
-import { existsSync, rmSync, writeFileSync } from 'fs';
-import { resolve } from 'path';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs';
+import { fromRoot } from '../lib/fromRoot';
 
 import { getAppConfig } from '../lib/getAppConfig';
 
 async function setEnvVars(): Promise<void> {
-  const { stage, apiDomainName } = await getAppConfig();
-
-  const envFilePath = resolve(__dirname, '..', 'client', '.env');
+  const envFilePath = fromRoot(['client', '.env']);
 
   if (existsSync(envFilePath))
     rmSync(envFilePath);
 
+  const { stage, apiDomainName, project } = await getAppConfig();
+  
+  const cdkOutputsRaw = JSON.parse(readFileSync(fromRoot(['dist', 'cdk-outputs.json'])).toString());
+  const webAppClientId = cdkOutputsRaw[`${project}-usersStack-${stage}`][`${project}webAppClientIdOutput${stage.replace(/\W/g, '')}`];
+
   const envVars = {
     stage,
-    apiDomainName
+    apiDomainName,
+    webAppClientId
   };
 
   let envFileString = '';
