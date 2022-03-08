@@ -8,9 +8,11 @@
     "build:client": "cd client && npm run build",
     "clean": "cross-env-shell \"rm -rf cdk.out bin/*.js coverage dist lib/*.js models/*.js src/**/*.js stacks/*.js test/*.js config.js\"",
     "cdk": "cdk",
-    "deploy": "run-s build deploy:app deploy:api",
+    "deploy": "run-s build deploy:backend deploy:resources",
     "deploy:api": "npm run ts-node bin/deployApi",
-    "deploy:app": "npm run ts-node bin/deploy",
+    "deploy:backend": "npm run ts-node bin/deploy",
+    "deploy:frontend": "npm run ts-node bin/deployFrontend",
+    "deploy:resources": "run-p deploy:api deploy:frontend",
     "destroy": "npm run ts-node bin/destroy",
     "dev": "cd client && npm run dev",
     "diff": "npm run cdk diff",
@@ -24,6 +26,7 @@
     "watch": "npm run ts-node bin/cdkWatch"
   },
   "devDependencies": {
+    "@aws-sdk/client-cloudfront": "^3.53.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.52.0",
     "@aws-sdk/client-iam": "^3.43.0",
     "@aws-sdk/client-sts": "^3.43.0",
@@ -34,7 +37,7 @@
     "@types/node": "^14.18.2",
     "@typescript-eslint/eslint-plugin": "^5.1.0",
     "@typescript-eslint/parser": "^5.1.0",
-    "aws-cdk": "^2.8.0",
+    "aws-cdk": "^2.15.0",
     "aws-sdk-client-mock": "^0.6.0",
     "cross-env": "^7.0.3",
     "esbuild": "^0.14.7",
@@ -60,6 +63,7 @@
     "aws-cdk-lib": "^2.4.0",
     "aws-jwt-verify": "^1.0.3",
     "constructs": "^10.0.0",
+    "s3-sync-client": "^3.0.0",
     "source-map-support": "^0.5.16"
   }
 }

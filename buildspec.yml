@@ -17,4 +17,5 @@ phases:
       - echo "Branch ${BRANCH}"
   post_build:
     commands:
+      - npm run deploy:resources
       - echo "Build completed on `date`"

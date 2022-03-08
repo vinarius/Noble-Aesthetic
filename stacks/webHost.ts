@@ -1,4 +1,4 @@
-import { App, Aws, RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { App, Aws, CfnOutput, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
@@ -44,6 +44,10 @@ export class WebHostStack extends Stack {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL
     });
 
+    new CfnOutput(this, `${project}-hostBucketNameOutput-${stage}`, {
+      value: hostBucket.bucketName
+    });
+
     const distribution = new Distribution(this, `${project}-siteDistribution-${stage}`, {
       defaultBehavior: {
         origin: new S3Origin(hostBucket),
@@ -58,6 +62,10 @@ export class WebHostStack extends Stack {
 
     distribution.applyRemovalPolicy(removalPolicy);
 
+    new CfnOutput(this, `${project}-siteDistributionIdOutput-${stage}`, {
+      value: distribution.distributionId
+    });
+
     if (isStagingEnv) {
       const zone = HostedZone.fromLookup(this, `${project}-hostedZoneLookup-${stage}`, { domainName });
 
@@ -67,12 +75,12 @@ export class WebHostStack extends Stack {
       });
     }
 
-    new BucketDeployment(this, `${project}-bucketDeploy-${stage}`, {
-      destinationBucket: hostBucket,
-      sources: [
-        Source.asset(resolve(__dirname, '..', 'dist', 'client'))
-      ],
-      distribution
-    });
+    // new BucketDeployment(this, `${project}-bucketDeploy-${stage}`, {
+    //   destinationBucket: hostBucket,
+    //   sources: [
+    //     Source.asset(resolve(__dirname, '..', 'dist', 'client'))
+    //   ],
+    //   distribution
+    // });
   }
 }
