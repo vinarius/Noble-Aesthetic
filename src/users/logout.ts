@@ -3,7 +3,7 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { logout } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
-import { retryOptions } from '../../lib/utils';
+import { retryOptions } from '../../lib/retryOptions';
 import { invalidTokenError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { LogoutReqBody, validateLogout } from '../../models/user';

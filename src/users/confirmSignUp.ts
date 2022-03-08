@@ -5,7 +5,8 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { adminDeleteUserById, adminGetUserById, confirmSignUp } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
-import { retryOptions, validateEnvVars } from '../../lib/utils';
+import { retryOptions } from '../../lib/retryOptions';
+import { validateEnvVars } from '../../lib/validateEnvVars';
 import { codeMismatchError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { ConfirmSignUpUserReqBody, DynamoUserItem, validateConfirmSignUpUser } from '../../models/user';

@@ -15,11 +15,11 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <Provider store={store}>
       <PersistGate loading={<Loading />} persistor={persistor}>
-      <div>
-        {/* <Navbar /> */}
-        <Component {...pageProps} />
-        {/* <Footer /> */}
-      </div>
+        <div>
+          {/* <Navbar /> */}
+          <Component {...pageProps} />
+          {/* <Footer /> */}
+        </div>
       </PersistGate>
     </Provider>
   );

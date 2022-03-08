@@ -3,7 +3,7 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { refreshUserToken } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
-import { retryOptions } from '../../lib/utils';
+import { retryOptions } from '../../lib/retryOptions';
 import { HandlerResponse } from '../../models/response';
 import { RefreshTokenReqBody, validateRefreshToken } from '../../models/user';
 

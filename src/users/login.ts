@@ -5,7 +5,8 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { login } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
-import { retryOptions, validateEnvVars } from '../../lib/utils';
+import { retryOptions } from '../../lib/retryOptions';
+import { validateEnvVars } from '../../lib/validateEnvVars';
 import { notAuthorizedError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { DynamoUserItem, LoginReqBody, validateLogin } from '../../models/user';

@@ -34,7 +34,7 @@ export const stages: StageDefinition[] = [
     deployMfa: true,
     domainName: '',
     certificateId: '',
-    apiDomainName: ''
+    apiDomainName: 'api.dev.nobleaesthetic.com'
   },
   {
     branch: 'develop',

@@ -11,7 +11,8 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { adminDeleteUserById } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
-import { retryOptions, validateEnvVars } from '../../lib/utils';
+import { retryOptions } from '../../lib/retryOptions';
+import { validateEnvVars } from '../../lib/validateEnvVars';
 import { HandlerResponse } from '../../models/response';
 import { DynamoUserItem, validateAdminCreateUser } from '../../models/user';
 

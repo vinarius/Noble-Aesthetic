@@ -1,9 +1,10 @@
-import Head from 'next/head';
-import React, { MouseEventHandler, ReactElement, useState } from 'react';
-import Foo from '../components/foo';
 import axios from 'axios';
-import { useAppDispatch, useAppSelector } from '../appState/store';
+import Head from 'next/head';
+import React, { ReactElement, useState } from 'react';
+
 import { addComment, removeComment } from '../appState/slices/auth';
+import { useAppDispatch, useAppSelector } from '../appState/store';
+import Foo from '../components/foo';
 
 export default function Home(): ReactElement {
   const dispatch = useAppDispatch();
@@ -42,8 +43,8 @@ export default function Home(): ReactElement {
 
         <div className='w-full flex flex-col items-center justify-center my-80'>
           <button
-          className='border-gray-900 p-3 m-5 bg-gray-600 text-white rounded'
-          onClick={getComments}
+            className='border-gray-900 p-3 m-5 bg-gray-600 text-white rounded'
+            onClick={getComments}
           >
             Get Comments
           </button>
@@ -51,7 +52,7 @@ export default function Home(): ReactElement {
           <div className='flex flex-col items-center justify-center'>
             <h1 className='text-4xl font-extrabold my-5'>Sample comments</h1>
             <ul className='w-full flex flex-col items-center justify-center'>
-              {comments.map((comment, index) => 
+              {comments.map((comment, index) =>
                 <li key={index} className='border-2 rounded m-3 w-3/4'>
                   <p>Body: {comment.body}</p>
                   <p>Email: {comment.email}</p>
@@ -60,7 +61,7 @@ export default function Home(): ReactElement {
                   <p>PostId: {comment.postId}</p>
                   <button
                     className='border-gray-900 p-2 m-2 bg-red-500 text-white rounded'
-                    onClick={(e)=>deleteComment(comment.id)}
+                    onClick={() => deleteComment(comment.id)}
                   >
                     Delete Comment
                   </button>

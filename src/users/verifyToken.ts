@@ -2,7 +2,7 @@ import { CognitoJwtVerifier } from 'aws-jwt-verify';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { setDefaultProps } from '../../lib/lambda';
-import { validateEnvVars } from '../../lib/utils';
+import { validateEnvVars } from '../../lib/validateEnvVars';
 import { HandlerResponse } from '../../models/response';
 import { validateVerifyToken, VerifyTokenReqBody } from '../../models/user';
 

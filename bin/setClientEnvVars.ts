@@ -4,14 +4,17 @@ import { resolve } from 'path';
 import { getAppConfig } from '../lib/getAppConfig';
 
 async function setEnvVars(): Promise<void> {
-  const { stage } = await getAppConfig();
+  const { stage, apiDomainName } = await getAppConfig();
 
   const envFilePath = resolve(__dirname, '..', 'client', '.env');
 
   if (existsSync(envFilePath))
     rmSync(envFilePath);
 
-  const envVars = { stage };
+  const envVars = {
+    stage,
+    apiDomainName
+  };
 
   let envFileString = '';
 

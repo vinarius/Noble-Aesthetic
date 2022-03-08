@@ -3,7 +3,8 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { forgotPassword } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
-import { retryOptions, validateEnvVars } from '../../lib/utils';
+import { retryOptions } from '../../lib/retryOptions';
+import { validateEnvVars } from '../../lib/validateEnvVars';
 import { HandlerResponse } from '../../models/response';
 import { ForgotPasswordReqBody, validateForgotPassword } from '../../models/user';
 
