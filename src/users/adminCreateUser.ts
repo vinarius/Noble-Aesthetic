@@ -9,13 +9,12 @@ import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import { ErrorObject } from 'ajv';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 
-import { adminDeleteUserById } from '../../lib/cognito';
+import { adminDeleteUserByUserName } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
 import { HandlerResponse } from '../../models/response';
 import { DynamoUserItem, validateAdminCreateUser } from '../../models/user';
-
 
 interface CreateUserResponse extends HandlerResponse{
   user?: DynamoUserItem;
@@ -33,6 +32,8 @@ const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 const adminCreateUserHandler = async (event: APIGatewayProxyEvent): Promise<CreateUserResponse> => {
   validateEnvVars(['usersTableName', 'userPoolId']);
 
+  const partitionKey = 'userName';
+  const sortKey = 'dataKey';
   const userParams: DynamoUserItem = JSON.parse(event.body ?? '{}');
 
   const isValid = validateAdminCreateUser(userParams);
@@ -43,26 +44,26 @@ const adminCreateUserHandler = async (event: APIGatewayProxyEvent): Promise<Crea
   };
 
   const {
-    email,
+    userName,
     phoneNumber
   } = userParams as DynamoUserItem;
 
-  const existingEmailTaken = await docClient.query({
+  const userNameTaken = await docClient.query({
     TableName: usersTableName,
-    IndexName: 'email_index',
-    KeyConditionExpression: 'email = :emailVal',
+    KeyConditionExpression: `${partitionKey} = :${partitionKey} and ${sortKey} = :${sortKey}`,
     ExpressionAttributeValues: {
-      ':emailVal': email
+      [`:${partitionKey}`]: userName,
+      [`:${sortKey}`]: 'details'
     }
   });
 
-  if (existingEmailTaken.Count! > 0) {
+  if (userNameTaken.Count! > 0) {
     const errorObject: ErrorObject = {
       instancePath: '',
       keyword: 'duplicate',
       params: { type: 'string' },
       schemaPath: '',
-      message: 'A user already exists with this email'
+      message: 'A user already exists with this username'
     };
     throw {
       success: false,
@@ -73,12 +74,12 @@ const adminCreateUserHandler = async (event: APIGatewayProxyEvent): Promise<Crea
 
   const createCognitoUserCommand = new AdminCreateUserCommand({
     UserPoolId: userPoolId,
-    Username: email,
+    Username: userName,
     DesiredDeliveryMediums: ['EMAIL'],
     UserAttributes: [
       {
         Name: UsernameAttributeType.EMAIL,
-        Value: email
+        Value: userName
       },
       {
         Name: UsernameAttributeType.PHONE_NUMBER,
@@ -101,12 +102,15 @@ const adminCreateUserHandler = async (event: APIGatewayProxyEvent): Promise<Crea
 
   const dynamoResponse = await docClient.update({
     TableName: usersTableName,
-    Key: { userId: Username },
+    Key: { 
+      Username,
+      sortKey: 'details'
+    },
     UpdateExpression,
     ExpressionAttributeValues,
     ReturnValues: 'ALL_NEW'
   }).catch(async error => {
-    await adminDeleteUserById(cognitoClient, userPoolId, Username!);
+    await adminDeleteUserByUserName(cognitoClient, userPoolId, Username!);
     throw error;
   });
 

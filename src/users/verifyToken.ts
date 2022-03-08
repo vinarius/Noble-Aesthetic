@@ -33,7 +33,7 @@ const verifyTokenHandler = async (event: APIGatewayProxyEvent): Promise<HandlerR
     tokenUse: 'access'
   });
 
-  await verifier.verify(accessToken).catch(error => {
+  const { exp } = await verifier.verify(accessToken).catch(error => {
     throw {
       success: false,
       statusCode: 400,
@@ -42,8 +42,11 @@ const verifyTokenHandler = async (event: APIGatewayProxyEvent): Promise<HandlerR
     };
   });
 
+  const isExpired = new Date() > new Date(exp * 1000); // TODO: update with luxon
+
   return {
-    success: true
+    success: !isExpired,
+    ...isExpired && { error: 'Token has expired. Refresh required.' }
   };
 };
 

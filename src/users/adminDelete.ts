@@ -13,7 +13,6 @@ const {
   userPoolId
 } = process.env;
 
-const primaryKey = 'userId';
 const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
@@ -21,31 +20,34 @@ const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 const adminDeleteUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<HandlerResponse> => {
   validateEnvVars(['usersTableName', 'userPoolId']);
 
-  const userId = event.pathParameters?.[primaryKey] as string;
+  const partitionKey = 'userName';
+  const sortKey = 'dataKey';
+  const userName = event.pathParameters?.[partitionKey] as string;
 
   const itemQuery = await docClient.query({
     TableName: usersTableName,
-    KeyConditionExpression: `${primaryKey} = :${primaryKey}`,
+    KeyConditionExpression: `${partitionKey} = :${partitionKey} and ${sortKey} = :${sortKey}`,
     ExpressionAttributeValues: {
-      [`:${primaryKey}`]: userId
+      [`:${partitionKey}`]: userName,
+      [`:${sortKey}`]: 'details'
     }
   });
 
   if (itemQuery.Count === 0) throw {
     success: false,
-    error: `User Id '${userId}' not found`,
+    error: `Username '${userName}' not found`,
     statusCode: 404
   };
 
   const originalDynamoItem = await docClient.delete({
-    Key: { userId },
+    Key: { userName },
     TableName: usersTableName,
     ReturnValues: 'ALL_OLD'
   });
 
   await cognitoClient.send(new AdminDeleteUserCommand({
     UserPoolId: userPoolId,
-    Username: userId
+    Username: userName
   })).catch(async error => {
     await docClient.put({
       TableName: usersTableName,

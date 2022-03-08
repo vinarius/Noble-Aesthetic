@@ -4,6 +4,7 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 import { resendConfirmationCode } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
 import { retryOptions } from '../../lib/retryOptions';
+import { validateEnvVars } from '../../lib/validateEnvVars';
 import { HandlerResponse } from '../../models/response';
 import { ResendConfirmationCodeReqBody, validateResendConfirmationCode } from '../../models/user';
 
@@ -11,10 +12,17 @@ interface SignUpResponse extends HandlerResponse {
   details: CodeDeliveryDetailsType;
 }
 
+const {
+  mobileAppClientId = ''
+} = process.env;
+
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
 const signUpHandler = async (event: APIGatewayProxyEvent): Promise<SignUpResponse> => {
+  validateEnvVars(['mobileAppClientId']);
+
   const params: ResendConfirmationCodeReqBody = JSON.parse(event.body ?? '{}');
+  const validClientIds = [mobileAppClientId];
 
   const isValid = validateResendConfirmationCode(params);
   if (!isValid) throw {
@@ -25,10 +33,18 @@ const signUpHandler = async (event: APIGatewayProxyEvent): Promise<SignUpRespons
 
   const {
     appClientId,
-    username
+    userName
   } = params.input;
 
-  const { CodeDeliveryDetails } = await resendConfirmationCode(cognitoClient, appClientId, username);
+  if (!validClientIds.includes(appClientId)) {
+    throw {
+      success: false,
+      error: `Appclient ID '${appClientId}' is Invalid`,
+      statusCode: 401
+    };
+  }
+  
+  const { CodeDeliveryDetails } = await resendConfirmationCode(cognitoClient, appClientId, userName);
 
   return {
     success: true,

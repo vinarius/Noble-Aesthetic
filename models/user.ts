@@ -16,7 +16,7 @@ enum jsonType {
 
 export interface AdminResetUserPasswordReqBody {
   input: {
-    userId: string;
+    userName: string;
   }
 }
 
@@ -31,7 +31,7 @@ export interface ChangePasswordReqBody {
 export interface ConfirmForgotPasswordReqBody {
   input: {
     appClientId: string;
-    username: string;
+    userName: string;
     proposedPassword: string;
     confirmationCode: string;
   }
@@ -40,7 +40,7 @@ export interface ConfirmForgotPasswordReqBody {
 export interface ConfirmSignUpUserReqBody {
   input: {
     appClientId: string;
-    username: string;
+    userName: string;
     confirmationCode: string;
     birthdate: string;
   }
@@ -57,34 +57,39 @@ export interface DynamoUserItem {
   };
   biography: string;
   birthdate: string;
-  email: string;
+  dataKey: string;
   firstName: string;
   gender: 'M'|'F'|'';
   lastName: string;
   phoneNumber: string;
-  subscription: {
-    current: {
-      datePurchased: string;
-      renewalDate: string;
-      tier: 'basic'|'premium';
-    };
-    history: {
-      datePurchased: string;
-      renewalDate: string;
-      tier: 'basic'|'premium';
-    }[];
+  trial: {
+    dateEnded: string;
+    dateStarted: string;
     isActive: boolean;
-    lastPaid: string;
-    nextBilling: string;
-    paymentFrequency: 'monthly'|'yearly'|'na';
-    trial: {
-      dateEnded: string;
-      dateStarted: string;
-      isActive: boolean;
-      isExpired: boolean;
-    }
+    isExpired: boolean;
   }
-  userId: string;
+  userName: string;
+}
+
+export interface DynamoUserSessionItem {
+  userName: string;
+  dataKey: string;
+  sessionData: {
+    averageSplitTime: string;
+    shotsOnTarget: {
+      timestamp: string;
+      zone: number;
+      index: number;
+    }[];
+    timeStart: string;
+    timeEnd: string;
+  };
+  latest?: number;
+}
+
+export interface DynamoUserVaultItem {
+  userName: string;
+  dataKey: string; //VAULT_{uuid4}
   vault: {
     ammo: {
       brand: string;
@@ -112,20 +117,49 @@ export interface DynamoUserItem {
     name: string;
     s3ImageUrl: string;
     serialNumber: string;
-  }[];
+  };
+}
+
+export interface DynamoUserSubscriptionItem {
+  userName: string;
+  isActive: false,
+  lastPaid: '',
+  nextBilling: '',
+  paymentFrequency: 'na',
+  dataKey: string;
+  datePurchased: string; //TODO: update later with luxon
+  latest?: number;
+  renewalDate?: string; //TODO: update later with luxon only for premium user
+  tier: 'basic'|'premium';
+}
+
+export interface putSessionReqBody {
+  input: {
+    session: {
+      userName: string;
+      averageSplitTime: string;
+      shotsOnTarget: {
+        timestamp: string;
+        zone: number;
+        index: number;
+      }[];
+      timeStart: string;
+      timeEnd: string;
+    };
+  }
 }
 
 export interface ForgotPasswordReqBody {
   input: {
     appClientId: string;
-    username: string;
+    userName: string;
   }
 }
 
 export interface LoginReqBody {
   input: {
     appClientId: string;
-    username: string;
+    userName: string;
     password: string;
   }
 }
@@ -146,14 +180,14 @@ export interface RefreshTokenReqBody {
 export interface ResendConfirmationCodeReqBody {
   input: {
     appClientId: string;
-    username: string;
+    userName: string;
   }
 }
 
 export interface SignUpUserReqBody {
   input: {
     appClientId: string;
-    username: string;
+    userName: string;
     password: string;
   }
 }
@@ -169,7 +203,6 @@ export interface UpdateUserAddress {
 
 export interface UpdateUserItem {
   input: {
-    email?: string;
     phoneNumber?: string;
     firstName?: string;
     lastName?: string;
@@ -188,11 +221,11 @@ const adminCreateUserSchema: Schema = {
   type: jsonType.OBJECT,
   additionalProperties: false,
   required: [
-    'email',
+    'userName',
     'phoneNumber'
   ],
   properties: {
-    email: { type: jsonType.STRING },
+    userName: { type: jsonType.STRING },
     phoneNumber: { type: jsonType.STRING },
     firstName: { type: jsonType.STRING },
     lastName: { type: jsonType.STRING },
@@ -281,7 +314,7 @@ const confirmForgotPasswordSchema: Schema = {
       additionalProperties: false,
       required: [
         'appClientId',
-        'username',
+        'userName',
         'proposedPassword',
         'confirmationCode'
       ],
@@ -289,7 +322,7 @@ const confirmForgotPasswordSchema: Schema = {
         appClientId: {
           type: jsonType.STRING
         },
-        username: {
+        userName: {
           type: jsonType.STRING
         },
         proposedPassword: {
@@ -315,7 +348,7 @@ const confirmSignUpUserSchema: Schema = {
       additionalProperties: false,
       required: [
         'appClientId',
-        'username',
+        'userName',
         'confirmationCode',
         'birthdate'
       ],
@@ -323,7 +356,7 @@ const confirmSignUpUserSchema: Schema = {
         appClientId: {
           type: jsonType.STRING
         },
-        username: {
+        userName: {
           type: jsonType.STRING
         },
         confirmationCode: {
@@ -349,13 +382,13 @@ const forgotPasswordSchema: Schema = {
       additionalProperties: false,
       required: [
         'appClientId',
-        'username'
+        'userName'
       ],
       properties: {
         appClientId: {
           type: jsonType.STRING
         },
-        username: {
+        userName: {
           type: jsonType.STRING
         }
       }
@@ -375,14 +408,14 @@ const loginSchema: Schema = {
       additionalProperties: false,
       required: [
         'appClientId',
-        'username',
+        'userName',
         'password'
       ],
       properties: {
         appClientId: {
           type: jsonType.STRING
         },
-        username: {
+        userName: {
           type: jsonType.STRING
         },
         password: {
@@ -453,13 +486,13 @@ const resendConfirmationCodeSchema: Schema = {
       additionalProperties: false,
       required: [
         'appClientId',
-        'username'
+        'userName'
       ],
       properties: {
         appClientId: {
           type: jsonType.STRING
         },
-        username: {
+        userName: {
           type: jsonType.STRING
         }
       }
@@ -479,14 +512,14 @@ const signUpUserSchema: Schema = {
       additionalProperties: false,
       required: [
         'appClientId',
-        'username',
+        'userName',
         'password'
       ],
       properties: {
         appClientId: {
           type: jsonType.STRING
         },
-        username: {
+        userName: {
           type: jsonType.STRING
         },
         password: {
@@ -509,7 +542,7 @@ const updateUserSchema: Schema = {
       additionalProperties: false,
       required: [],
       properties: {
-        email: { type: jsonType.STRING },
+        userName: { type: jsonType.STRING },
         phoneNumber: { type: jsonType.STRING },
         firstName: { type: jsonType.STRING },
         lastName: { type: jsonType.STRING },
@@ -557,6 +590,72 @@ const verifyTokenSchema: Schema = {
   }
 } as const;
 
+const putSessionSchema: Schema = {
+  type: jsonType.OBJECT,
+  properties: {
+    input: {
+      type: jsonType.OBJECT,
+      additionalProperties: false,
+      required: [
+        'session'
+      ],
+      properties: {
+        session: {
+          type: jsonType.OBJECT,
+          additionalProperties: false,
+          required: [
+            'averageSplitTime',
+            'shotsOnTarget',
+            'timeStart',
+            'timeEnd',
+            'userName'
+          ],
+          properties: {
+            averageSplitTime: {
+              type: jsonType.STRING
+            },
+            timeStart: {
+              type: jsonType.STRING
+            },
+            timeEnd: {
+              type: jsonType.STRING
+            },
+            shotsOnTarget: {
+              type: 'array',
+              items: {
+                type: jsonType.OBJECT,
+                additionalProperties: false,
+                required: [
+                  'timestamp', 'zone', 'index'
+                ],
+                properties: {
+                  timestamp: {
+                    type: jsonType.STRING
+                  },
+                  zone: {
+                    type: jsonType.NUMBER,
+                    enum: [7, 8, 9, 10]
+                  },
+                  index: {
+                    type: jsonType.NUMBER
+                  }
+                }
+              }
+            },
+            userName: {
+              type: jsonType.STRING
+            }
+          }
+        }
+      }
+    }
+  },
+  additionalProperties: false,
+  required: [
+    'input'
+  ]
+} as const;
+
 export const validateAdminCreateUser = ajv.compile(adminCreateUserSchema);
 export const validateAdminResetPassword = ajv.compile(adminResetPasswordSchema);
 export const validateChangePassword = ajv.compile(changePasswordSchema);
@@ -570,3 +669,4 @@ export const validateResendConfirmationCode = ajv.compile(resendConfirmationCode
 export const validateSignUpUser = ajv.compile(signUpUserSchema);
 export const validateUpdateUser = ajv.compile(updateUserSchema);
 export const validateVerifyToken = ajv.compile(verifyTokenSchema);
+export const validatePutSession = ajv.compile(putSessionSchema);

@@ -64,7 +64,7 @@ export async function adminCreateUser(
   return output;
 }
 
-export async function adminDeleteUserById(
+export async function adminDeleteUserByUserName(
   client: CognitoIdentityProviderClient,
   UserPoolId: string,
   Username: string
@@ -78,7 +78,7 @@ export async function adminDeleteUserById(
   return output;
 }
 
-export async function adminGetUserById(
+export async function adminGetUserByUserName(
   client: CognitoIdentityProviderClient,
   UserPoolId: string,
   Username: string

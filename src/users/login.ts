@@ -17,18 +17,21 @@ interface LoginResponse extends HandlerResponse {
 }
 
 const {
-  usersTableName = ''
+  usersTableName = '',
+  mobileAppClientId = ''
 } = process.env;
 
-const primaryKey = 'email';
 const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
 const loginHandler = async (event: APIGatewayProxyEvent): Promise<LoginResponse> => {
-  validateEnvVars(['usersTableName']);
+  validateEnvVars(['usersTableName', 'mobileAppClientId']);
   
+  const partitionKey = 'userName';
+  const sortKey = 'dataKey';
   const params: LoginReqBody = JSON.parse(event.body ?? '{}');
+  const validClientIds = [mobileAppClientId];
 
   const isValid = validateLogin(params);
   if (!isValid) throw {
@@ -39,26 +42,34 @@ const loginHandler = async (event: APIGatewayProxyEvent): Promise<LoginResponse>
 
   const {
     appClientId,
-    username,
+    userName,
     password
   } = params.input;
 
-  const result: InitiateAuthCommandOutput = await login(cognitoClient, appClientId, username, password).catch(err => {
+  if (!validClientIds.includes(appClientId)) {
+    throw {
+      success: false,
+      error: `Appclient ID '${appClientId}' is Invalid`,
+      statusCode: 401
+    };
+  }
+
+  const result: InitiateAuthCommandOutput = await login(cognitoClient, appClientId, userName, password).catch(err => {
     throw err.name?.toLowerCase() === 'notauthorizedexception' ? notAuthorizedError : err;
   });
 
   const itemQuery = await docClient.query({
     TableName: usersTableName,
-    IndexName: 'email_index',
-    KeyConditionExpression: `${primaryKey} = :${primaryKey}`,
+    KeyConditionExpression: `${partitionKey} = :${partitionKey} and ${sortKey} = :${sortKey}`,
     ExpressionAttributeValues: {
-      [`:${primaryKey}`]: username
+      [`:${partitionKey}`]: userName,
+      [`:${sortKey}`]: 'details'
     }
   });
 
   if (itemQuery.Count === 0) throw {
     success: false,
-    error: `Username '${username}' not found in dynamo database`,
+    error: `Username '${userName}' not found in dynamo database`,
     statusCode: 404
   };
 

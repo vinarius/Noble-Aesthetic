@@ -22,8 +22,9 @@ const docClient = DynamoDBDocument.from(dynamoClient);
 const updateUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<UpdateUserResponse> => {
   validateEnvVars(['usersTableName']);
 
-  const primaryKey = 'userId';
-  const userId = event.pathParameters?.[primaryKey] as string;
+  const partitionKey = 'userName';
+  const sortKey = 'dataKey';
+  const userName = event.pathParameters?.[partitionKey] as string;
   const userParams: UpdateUserItem = JSON.parse(event.body ?? '{}');
   const isValid = validateUpdateUser(userParams);
 
@@ -39,15 +40,16 @@ const updateUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<Updat
 
   const itemQuery = await docClient.query({
     TableName: usersTableName,
-    KeyConditionExpression: `${primaryKey} = :${primaryKey}`,
+    KeyConditionExpression: `${partitionKey} = :${partitionKey} and ${sortKey} = :${sortKey}`,
     ExpressionAttributeValues: {
-      [`:${primaryKey}`]: userId
+      [`:${partitionKey}`]: userName,
+      [`:${sortKey}`]: 'details'
     }
   });
 
   if (itemQuery.Count === 0) throw {
     success: false,
-    error: `User Id '${userId}' not found`,
+    error: `Username '${userName}' not found`,
     statusCode: 404
   };
 
@@ -62,7 +64,10 @@ const updateUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<Updat
 
   const dynamoResponse = await docClient.update({
     TableName: usersTableName,
-    Key: { userId },
+    Key: { 
+      userName,
+      sortKey: 'details'
+    },
     UpdateExpression,
     ExpressionAttributeValues,
     ReturnValues: 'ALL_NEW'

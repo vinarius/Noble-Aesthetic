@@ -12,12 +12,17 @@ interface ForgotPasswordResponse extends HandlerResponse {
   details: CodeDeliveryDetailsType
 }
 
+const {
+  mobileAppClientId = ''
+} = process.env;
+
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
 const forgotPasswordHandler = async (event: APIGatewayProxyEvent): Promise<ForgotPasswordResponse> => {
-  validateEnvVars([]);
+  validateEnvVars(['mobileAppClientId']);
 
   const userParams: ForgotPasswordReqBody = JSON.parse(event.body ?? '{}');
+  const validClientIds = [mobileAppClientId];
 
   const isValid = validateForgotPassword(userParams);
   if (!isValid) throw {
@@ -28,10 +33,18 @@ const forgotPasswordHandler = async (event: APIGatewayProxyEvent): Promise<Forgo
 
   const {
     appClientId,
-    username
+    userName
   } = userParams.input;
 
-  const { CodeDeliveryDetails } = await forgotPassword(cognitoClient, appClientId, username);
+  if (!validClientIds.includes(appClientId)) {
+    throw {
+      success: false,
+      error: `Appclient ID '${appClientId}' is Invalid`,
+      statusCode: 401
+    };
+  }
+
+  const { CodeDeliveryDetails } = await forgotPassword(cognitoClient, appClientId, userName);
 
   return {
     success: true,

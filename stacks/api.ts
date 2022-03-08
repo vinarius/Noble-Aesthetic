@@ -104,6 +104,8 @@ export class ApiStack extends Stack {
       }
     });
 
+    restApi.applyRemovalPolicy(RemovalPolicy.DESTROY);
+
     new StringParameter(this, `${project}-apiIdParam-${stage}`, {
       parameterName: `/${project}/api/id/${stage}`,
       stringValue: restApi.restApiId
@@ -131,20 +133,24 @@ export class ApiStack extends Stack {
       const certArn = `arn:${Aws.PARTITION}:acm:${Aws.REGION}:${Aws.ACCOUNT_ID}:certificate/${certificateId}`;
       const existingCertificate = Certificate.fromCertificateArn(this, `${project}-certificate-${stage}`, certArn);
 
-      restApi.addDomainName(`${project}-apiDomain-${stage}`, {
+      const apiCustomDomain = restApi.addDomainName(`${project}-apiDomain-${stage}`, {
         certificate: existingCertificate,
         domainName: apiDomainName,
         securityPolicy: SecurityPolicy.TLS_1_2,
         endpointType: EndpointType.EDGE
       });
 
+      apiCustomDomain.applyRemovalPolicy(RemovalPolicy.DESTROY);
+
       const zone = HostedZone.fromLookup(this, `${project}-${stack}-hostedZoneLookup-${stage}`, { domainName });
 
-      new ARecord(this, `${project}-${stack}-ARecord-${stage}`, {
+      const aRecord = new ARecord(this, `${project}-${stack}-ARecord-${stage}`, {
         zone,
         target: RecordTarget.fromAlias(new ApiGatewayDomain(restApi.domainName!)),
         recordName: apiDomainName
       });
+
+      aRecord.applyRemovalPolicy(RemovalPolicy.DESTROY);
     }
 
     new GatewayResponse(this, `${project}-${stack}-unauthorizedResponse-${stage}`, {
@@ -175,8 +181,6 @@ export class ApiStack extends Stack {
     });
 
     // deployApi.ts script is dependent on reading this logical id.
-    new CfnOutput(this, `${project}-apiIdOutput-${stage}`, {
-      value: restApi.restApiId
-    });
+    new CfnOutput(this, `${project}-apiIdOutput-${stage}`, { value: restApi.restApiId });
   }
 }
