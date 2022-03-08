@@ -17,21 +17,22 @@ async function syncHostBucket () {
   const { IS_CODEBUILD } = process.env;
 
   try {
-    const { profile, project, stage, isStagingEnv } = await getAppConfig();
+    const { profile, project, stage, isStagingEnv, env } = await getAppConfig();
 
     if (!IS_CODEBUILD && isStagingEnv) throw new Error(`Unable to execute deployFrontend, is a staging environment - ${stage}`);
     
-    if (!IS_CODEBUILD) await validateAwsProfile(profile);
+    if (!IS_CODEBUILD) {
+      await validateAwsProfile(profile);
+      process.env.AWS_PROFILE = profile;
+      process.env.AWS_REGION = env.region;
+    }
 
     const cdkOutputsRaw = JSON.parse(readFileSync(fromRoot(['dist', 'cdk-outputs.json'])).toString());
     const hostBucketName = cdkOutputsRaw[`${project}-WebHostStack-${stage}`][`${project}hostBucketNameOutput${stage.replace(/\W/g, '')}`];
     const distributionId = cdkOutputsRaw[`${project}-WebHostStack-${stage}`][`${project}siteDistributionIdOutput${stage.replace(/\W/g, '')}`];
 
-    console.log('\n>>> Syncing client build with host bucket');
     await sync(fromRoot(['dist', 'client']), `s3://${hostBucketName}`, { del: true });
-    console.log('>>> Host bucket deployment complete.');
 
-    console.log('>>> Invalidating cloudfront cache.');
     await cloudfrontClient.send(new CreateInvalidationCommand({
       DistributionId: distributionId,
       InvalidationBatch: {
@@ -42,9 +43,8 @@ async function syncHostBucket () {
         }
       }
     }));
-    console.log('>>> Cache invalidation complete.');
     
-    console.log('>>> Frontend deployment complete.\n');
+    console.log('\n>>> Client deployment complete.\n');
   } catch (error) {
     const { name, message } = error as Error;
     console.error(`${name}: ${message}`);
