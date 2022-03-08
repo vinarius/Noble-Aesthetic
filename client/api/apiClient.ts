@@ -11,7 +11,7 @@ export class ApiClient {
         ...token && { Authorization: token } 
       }
     });
-  }
+  } //
 
   public get(route: string) {
     return this.client.get(route);
