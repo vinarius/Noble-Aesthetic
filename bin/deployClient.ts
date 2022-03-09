@@ -1,6 +1,7 @@
-import { S3Client } from '@aws-sdk/client-s3';
 import { CloudFrontClient, CreateInvalidationCommand } from '@aws-sdk/client-cloudfront';
+import { S3Client } from '@aws-sdk/client-s3';
 import { readFileSync } from 'fs';
+import { lookup } from 'mime-types';
 
 import { fromRoot } from '../lib/fromRoot';
 import { getAppConfig } from '../lib/getAppConfig';
@@ -13,14 +14,14 @@ const cloudfrontClient = new CloudFrontClient({ ...retryOptions });
 const s3Client = new S3Client({ ...retryOptions });
 const { sync } = new S3SyncClient({ client: s3Client });
 
-async function syncHostBucket () {
+async function syncHostBucket() {
   const { IS_CODEBUILD } = process.env;
 
   try {
     const { profile, project, stage, isStagingEnv, env } = await getAppConfig();
 
     if (!IS_CODEBUILD && isStagingEnv) throw new Error(`Unable to execute deployFrontend, is a staging environment - ${stage}`);
-    
+
     if (!IS_CODEBUILD) {
       await validateAwsProfile(profile);
       process.env.AWS_PROFILE = profile;
@@ -31,7 +32,14 @@ async function syncHostBucket () {
     const hostBucketName = cdkOutputsRaw[`${project}-WebHostStack-${stage}`][`${project}hostBucketNameOutput${stage.replace(/\W/g, '')}`];
     const distributionId = cdkOutputsRaw[`${project}-WebHostStack-${stage}`][`${project}siteDistributionIdOutput${stage.replace(/\W/g, '')}`];
 
-    await sync(fromRoot(['dist', 'client']), `s3://${hostBucketName}`, { del: true });
+    await sync(fromRoot(['dist', 'client']), `s3://${hostBucketName}`, {
+      del: true,
+      commandInput: {
+        ContentType: (syncCommandInput: { Key: string; }) => (
+          lookup(syncCommandInput.Key) || 'text/html'
+        )
+      }
+    });
 
     await cloudfrontClient.send(new CreateInvalidationCommand({
       DistributionId: distributionId,
@@ -43,7 +51,7 @@ async function syncHostBucket () {
         }
       }
     }));
-    
+
     console.log('\n>>> Client deployment complete.\n');
   } catch (error) {
     const { name, message } = error as Error;
