@@ -5,8 +5,6 @@ import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { BlockPublicAccess, Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
-import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
-import { resolve } from 'path';
 
 import { NobleStackProps } from '../models/cloudResources';
 
@@ -66,6 +64,12 @@ export class WebHostStack extends Stack {
       value: distribution.distributionId
     });
 
+    if (!isStagingEnv) {
+      new CfnOutput(this, `${project}-siteDistributionDomainNameOutput-${stage}`, {
+        value: distribution.distributionDomainName
+      });
+    }
+
     if (isStagingEnv) {
       const zone = HostedZone.fromLookup(this, `${project}-hostedZoneLookup-${stage}`, { domainName });
 
@@ -74,13 +78,5 @@ export class WebHostStack extends Stack {
         target: RecordTarget.fromAlias(new CloudFrontTarget(distribution))
       });
     }
-
-    // new BucketDeployment(this, `${project}-bucketDeploy-${stage}`, {
-    //   destinationBucket: hostBucket,
-    //   sources: [
-    //     Source.asset(resolve(__dirname, '..', 'dist', 'client'))
-    //   ],
-    //   distribution
-    // });
   }
 }

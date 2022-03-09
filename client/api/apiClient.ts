@@ -6,12 +6,12 @@ export class ApiClient {
   private authToken: string = '';
   private config: AxiosRequestConfig = { headers: {} };
 
-  constructor (token?: string) {
+  constructor(token?: string) {
     this.client = axios.create({
       baseURL: `https://${process.env.NEXT_PUBLIC_APIDOMAINNAME}/`,
       headers: {
         Accept: 'application/json',
-        ...token && { Authorization: token } 
+        ...token && { Authorization: token }
       }
     });
 
@@ -24,7 +24,7 @@ export class ApiClient {
   }
 
   public async get<T>(route: string, options?: AxiosRequestConfig): Promise<T> {
-    const { data } = await this.client.get(encodeURIComponent(route), {
+    const { data } = await this.client.get(route, {
       ...this.config,
       ...options
     });
@@ -33,7 +33,7 @@ export class ApiClient {
   }
 
   public async post<T>(route: string, body: any, options?: AxiosRequestConfig): Promise<T> {
-    const { data } = await this.client.post(encodeURIComponent(route), body, {
+    const { data } = await this.client.post(route, body, {
       ...this.config,
       ...options
     });
@@ -42,7 +42,7 @@ export class ApiClient {
   }
 
   public async put<T>(route: string, body: any, options?: AxiosRequestConfig): Promise<T> {
-    const { data } = await this.client.put(encodeURIComponent(route), body, {
+    const { data } = await this.client.put(route, body, {
       ...this.config,
       ...options
     });
@@ -51,7 +51,7 @@ export class ApiClient {
   }
 
   public async delete<T>(route: string, body: any, options?: AxiosRequestConfig): Promise<T> {
-    const { data } = await this.client.delete(encodeURIComponent(route), {
+    const { data } = await this.client.delete(route, {
       data: { ...body },
       ...this.config,
       ...options
@@ -61,11 +61,8 @@ export class ApiClient {
   }
 }
 
-export function buildApiClient() {
-  const api = new ApiClient(); // TODO: read auth token from redux store
-
-  return {
-    axios: api,
-    users: getUsersApi(api)
-  };
-}
+const api = new ApiClient(); // TODO: read auth token from redux store
+export const apiClient = {
+  axios: api,
+  users: getUsersApi(api)
+};

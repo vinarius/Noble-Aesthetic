@@ -3,9 +3,8 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { createLogger } from 'redux-logger';
 import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import { authSlice } from './slices/auth';
 
-import { counterSlice } from './slices/counter';
+import { authSlice } from './slices/auth';
 
 const middleware = [];
 
@@ -16,7 +15,6 @@ if (process.env.NEXT_PUBLIC_STAGE !== 'prod') {
 }
 
 const rootReducer = combineReducers({
-  counter: counterSlice.reducer,
   auth: authSlice.reducer
 });
 

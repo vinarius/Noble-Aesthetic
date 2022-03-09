@@ -8,17 +8,17 @@ import { persistor, store } from '../appState/store';
 import Loading from '../components/loading';
 
 import type { AppProps } from 'next/app';
-// import Navbar from '../components/navbar';
-// import Footer from '../components/footer';
+import Navbar from '../components/navbar';
+import Footer from '../components/footer';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <Provider store={store}>
       <PersistGate loading={<Loading />} persistor={persistor}>
         <div>
-          {/* <Navbar /> */}
+          <Navbar />
           <Component {...pageProps} />
-          {/* <Footer /> */}
+          <Footer />
         </div>
       </PersistGate>
     </Provider>

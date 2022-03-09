@@ -5,8 +5,8 @@ import Link from 'next/link';
 export default function Navbar(): ReactElement {
   return <>
     <header className='w-full'>
-      <nav className='w-full flex items-center justify-end bg-gray-600 text-white text-lg'>
-        <div className='m-10'>
+      <nav className='w-full flex items-center justify-end bg-black text-white text-lg'>
+        <div className='m-5'>
           <Link href="/">
             <a className='m-2'>
               About
