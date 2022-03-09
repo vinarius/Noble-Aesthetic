@@ -12,10 +12,11 @@ phases:
   build:
     commands:
       - echo "Build started on `date`"
-      - npm run build
+      - npm run clean
       - npm run cdk -- deploy --all --require-approval never
+      - npm run build:client
+      - npm run deploy:resources
       - echo "Branch ${BRANCH}"
   post_build:
     commands:
-      - npm run deploy:resources
       - echo "Build completed on `date`"
