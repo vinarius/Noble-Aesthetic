@@ -1,7 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { UserGroup } from '../../../models/enums';
 
 interface AuthState {
   isLoggedIn: boolean;
+  role?: UserGroup;
   accessToken?: string;
   idToken?: string;
   refreshToken?: string;
