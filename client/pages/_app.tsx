@@ -1,6 +1,6 @@
 import '../styles/globals.css';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 
@@ -12,6 +12,12 @@ import Navbar from '../components/navbar';
 import Footer from '../components/footer';
 
 function MyApp({ Component, pageProps }: AppProps) {
+
+
+  useEffect(()=>{
+    console.log('executed useEffect in _app');
+  });
+
   return (
     <Provider store={store}>
       <PersistGate loading={<Loading />} persistor={persistor}>

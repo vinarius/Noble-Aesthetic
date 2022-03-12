@@ -1,22 +1,19 @@
-# This workflow will do a clean install and run the test suite.
+# This workflow will do a clean install, run linting, the unit test suite, and a test synthesis.
 
-name: Test
+name: PR Check
 
 on:
   pull_request:
     branches: [ master, develop ]
 
 jobs:
-  test:
+  verify:
     runs-on: ubuntu-latest
-
     env:
       IS_GITHUB: 'true'
-
     strategy:
       matrix:
         node-version: [14.x]
-
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
@@ -24,6 +21,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm i -g npm@8
+    - run: echo "BRANCH=${GITHUB_BASE_REF}" >> $GITHUB_ENV
     - run: npm ci
-    - run: npm test
+    - run: npm run pr-check

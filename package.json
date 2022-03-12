@@ -18,6 +18,7 @@
     "diff": "npm run cdk diff",
     "lint": "eslint . --ext .ts",
     "postinstall": "cd client && npm i",
+    "pr-check": "run-p lint synth test",
     "setClientEnvVars": "npm run ts-node bin/setClientEnvVars",
     "synth": "run-s build \"ts-node bin/synth\"",
     "test": "jest --coverage --passWithNoTests",
