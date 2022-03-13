@@ -18,8 +18,8 @@ import { Construct } from 'constructs';
 import { resolve } from 'path';
 
 import { NobleStackProps } from '../models/cloudResources';
-import { HttpMethod } from '../models/enums';
-import { LambdaDefinition, UserGroup } from '../models/lambda';
+import { HttpMethod, UserGroup } from '../models/enums';
+import { LambdaDefinition } from '../models/lambda';
 
 export class UsersStack extends Stack {
   constructor(scope: Construct, id: string, props: NobleStackProps) {

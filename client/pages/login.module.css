@@ -1,0 +1,8 @@
+.min-h-90 {
+  min-height: 90vh;
+}
+
+.bg-image-dumbbell {
+  background: url('/dumbbell.jpg');
+  background-size: cover;
+}

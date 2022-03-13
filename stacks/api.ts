@@ -182,5 +182,6 @@ export class ApiStack extends Stack {
 
     // deployApi.ts script is dependent on reading this logical id.
     new CfnOutput(this, `${project}-apiIdOutput-${stage}`, { value: restApi.restApiId });
+    new CfnOutput(this, `${project}-apiUrlOutput-${stage}`, { value: restApi.url });
   }
 }

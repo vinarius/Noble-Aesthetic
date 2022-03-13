@@ -9,14 +9,15 @@ async function setEnvVars(): Promise<void> {
   if (existsSync(envFilePath))
     rmSync(envFilePath);
 
-  const { stage, apiDomainName, project } = await getAppConfig();
+  const { stage, apiDomainName, project, isStagingEnv } = await getAppConfig();
   
   const cdkOutputsRaw = JSON.parse(readFileSync(fromRoot(['dist', 'cdk-outputs.json'])).toString());
   const webAppClientId = cdkOutputsRaw[`${project}-usersStack-${stage}`][`${project}webAppClientIdOutput${stage.replace(/\W/g, '')}`];
+  const apiUrl = cdkOutputsRaw[`${project}-apiStack-${stage}`][`${project}apiUrlOutput${stage.replace(/\W/g, '')}`];
 
   const envVars = {
+    apiDomainName: isStagingEnv ? apiDomainName : apiUrl,
     stage,
-    apiDomainName,
     webAppClientId
   };
 

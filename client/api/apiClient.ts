@@ -11,6 +11,9 @@ export class ApiClient {
       baseURL: `https://${process.env.NEXT_PUBLIC_APIDOMAINNAME}/`,
       headers: {
         Accept: 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': '*',
+        'Access-Control-Allow-Headers': '*',
         ...token && { Authorization: token }
       }
     });
