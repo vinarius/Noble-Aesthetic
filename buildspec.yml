@@ -13,7 +13,7 @@ phases:
     commands:
       - echo "Build started on `date`"
       - npm run clean
-      - npm run cdk -- deploy --all --require-approval never
+      - npm run cdk -- deploy --all --require-approval never --outputs-file ./dist/cdk-outputs.json
       - npm run build:client
       - npm run deploy:resources
       - echo "Branch ${BRANCH}"
