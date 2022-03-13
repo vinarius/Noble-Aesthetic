@@ -18,7 +18,7 @@ export class CICDStack extends Stack {
       stack
     } = props;
 
-    const hostBucketArn = StringParameter.fromStringParameterName(this, `${project}-${stack}-hostBucketArnParam-${stage}`, `/${project}/${stack}/hostbucketArn/${stage}`).stringValue;
+    const hostBucketArn = StringParameter.fromStringParameterName(this, `${project}-${stack}-hostBucketArnParam-${stage}`, `/${project}/webhost/hostbucketArn/${stage}`).stringValue;
 
     new Project(this, `${project}-codeBuildProject-${stage}`, {
       projectName: `${project}-codeBuildProject-${stage}`,

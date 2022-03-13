@@ -78,7 +78,7 @@ async function buildInfrastructure(): Promise<void> {
     });
 
     usersStack.addDependency(apiStack);
-    cicdStack.addDependency(webhostStack); // TODO: add ssm parameter and add to policy statement s3:* action
+    cicdStack.addDependency(webhostStack);
 
     app.synth();
   } catch (error) {
