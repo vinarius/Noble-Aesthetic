@@ -5,6 +5,7 @@ import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { BlockPublicAccess, Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 import { NobleStackProps } from '../models/cloudResources';
 
@@ -22,7 +23,8 @@ export class WebHostStack extends Stack {
       stage,
       isStagingEnv,
       domainName,
-      certificateId
+      certificateId,
+      stack
     } = props;
 
     const removalPolicy = isStagingEnv ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY;
@@ -40,6 +42,11 @@ export class WebHostStack extends Stack {
       enforceSSL: true,
       removalPolicy,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL
+    });
+
+    new StringParameter(this, `${project}-${stack}-hostBucketArnParam-${stage}`, {
+      parameterName: `/${project}/${stack}/hostbucketArn/${stage}`,
+      stringValue: hostBucket.bucketArn
     });
 
     new CfnOutput(this, `${project}-hostBucketNameOutput-${stage}`, {

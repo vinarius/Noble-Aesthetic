@@ -24,8 +24,8 @@ export default function CheckAuth({ Component, pageProps }: CheckAuthProps): Rea
   }
 
   return <>
-    <Navbar />
+    {isLoggedIn && <Navbar />}
     <Component {...pageProps} />
-    <Footer />
+    {isLoggedIn && <Footer />}
   </>;
 }
