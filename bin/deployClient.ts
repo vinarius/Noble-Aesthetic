@@ -56,6 +56,7 @@ async function syncHostBucket() {
   } catch (error) {
     const { name, message } = error as Error;
     console.error(`${name}: ${message}`);
+    console.error(error);
 
     process.exit(1);
   }

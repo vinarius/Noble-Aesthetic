@@ -16,6 +16,7 @@
     "destroy": "npm run ts-node bin/destroy",
     "dev": "cd client && npm run dev",
     "diff": "npm run cdk diff",
+    "hotswap": "npm run ts-node bin/hotswap",
     "lint": "eslint . --ext .ts",
     "postinstall": "cd client && npm i",
     "pr-check": "run-p lint synth test",
