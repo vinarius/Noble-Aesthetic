@@ -1,5 +1,5 @@
 import { AppProps } from 'next/app';
-import React, { ReactElement, useEffect } from 'react';
+import React, { ReactElement } from 'react';
 
 import { useAppSelector } from '../appState/store';
 import Footer from './footer';

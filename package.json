@@ -6,7 +6,7 @@
     "aws-token": "npm run ts-node bin/awsToken",
     "build": "run-s clean",
     "build:client": "npm run setClientEnvVars && cd client && npm run build",
-    "clean": "cross-env-shell \"rm -rf cdk.out bin/*.js coverage dist lib/*.js models/*.js src/**/*.js stacks/*.js test/*.js config.js\"",
+    "clean": "cross-env-shell \"rm -rf cdk.out bin/*.js coverage dist lib/*.js models/*.js src/**/*.js stacks/*.js test/*.js config.js\" && mkdir dist",
     "cdk": "cdk",
     "deploy": "run-s build deploy:server build:client deploy:resources",
     "deploy:api": "npm run ts-node bin/deployApi",

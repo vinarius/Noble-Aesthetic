@@ -13,10 +13,10 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <Provider store={store}>
       <PersistGate loading={<Loading />} persistor={persistor}>
-          <CheckAuth
-            Component={Component}
-            pageProps={pageProps}
-          />
+        <CheckAuth
+          Component={Component}
+          pageProps={pageProps}
+        />
       </PersistGate>
     </Provider>
   );
