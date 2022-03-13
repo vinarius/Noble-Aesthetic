@@ -31,7 +31,7 @@ async function buildInfrastructure(): Promise<void> {
 
     const terminationProtection = isStagingEnv;
 
-    new WebHostStack(app, `${project}-WebHostStack-${stage}`, {
+    const webhostStack = new WebHostStack(app, `${project}-WebHostStack-${stage}`, {
       stackName: `${project}-WebHostStack-${stage}`,
       stack: 'webhost',
       env,
@@ -43,7 +43,7 @@ async function buildInfrastructure(): Promise<void> {
       certificateId
     });
 
-    new CICDStack(app, `${project}-CICDStack-${stage}`, {
+    const cicdStack = new CICDStack(app, `${project}-CICDStack-${stage}`, {
       stackName: `${project}-CICDStack-${stage}`,
       stack: 'cicd',
       env,
@@ -78,6 +78,7 @@ async function buildInfrastructure(): Promise<void> {
     });
 
     usersStack.addDependency(apiStack);
+    cicdStack.addDependency(webhostStack); // TODO: add ssm parameter and add to policy statement s3:* action
 
     app.synth();
   } catch (error) {

@@ -51,6 +51,11 @@ export class CICDStack extends Stack {
                 resources: [
                   `arn:${Aws.PARTITION}:iam::${Aws.ACCOUNT_ID}:role/cdk-hnb659fds-*`
                 ]
+              }),
+              new PolicyStatement({
+                effect: Effect.ALLOW,
+                actions: ['s3:*'],
+                resources: [] // TODO: add s3 bucket from web host stack
               })
             ]
           })
