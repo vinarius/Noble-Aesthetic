@@ -15,6 +15,7 @@ interface SetLoginPayload {
   AccessToken: string;
   ExpiresIn: number;
   IdToken: string;
+  isLoggedIn: boolean;
   RefreshToken: string;
 }
 
@@ -29,7 +30,7 @@ export const authSlice = createSlice({
     setLogin: (state, action: PayloadAction<SetLoginPayload>) => {
       state.accessToken = action.payload.AccessToken;
       state.idToken = action.payload.IdToken;
-      state.isLoggedIn = true;
+      state.isLoggedIn = action.payload.isLoggedIn;
       state.refreshToken = action.payload.RefreshToken;
       state.tokenExpiration = DateTime.utc().plus({ seconds: action.payload.ExpiresIn });
     }

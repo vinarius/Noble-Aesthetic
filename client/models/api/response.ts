@@ -28,14 +28,6 @@ export interface CodeDeliveryDetails {
   Destination: string;
 };
 
-export interface LoginResponse {
-  result: {
-    AuthenticationResult: AuthenticationResult;
-    ChallengeParameters: {};
-  };
-  user: UserDetails;
-}
-
 export interface SignupResponse {
   CodeDeliveryDetails: CodeDeliveryDetails;
   UserConfirmed: boolean;

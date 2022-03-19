@@ -2,21 +2,11 @@ import { DynamoUserItem } from '../../../models/user';
 
 export interface LoginResponse {
   success: boolean;
-  result: {
-    $metadata: {
-      httpStatusCode: number;
-      requestId: string;
-      attempts: number;
-      totalRetryDelay: number;
-    };
-    AuthenticationResult: {
-      AccessToken: string;
-      ExpiresIn: number;
-      IdToken: string;
-      RefreshToken: string;
-      TokenType: string;
-    };
-    ChallengeParameters: {}
+  payload: {
+    AccessToken: string;
+    ExpiresIn: number;
+    IdToken: string;
+    RefreshToken: string;
   };
   user: DynamoUserItem;
 }

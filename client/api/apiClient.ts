@@ -11,9 +11,6 @@ export class ApiClient {
       baseURL: `https://${process.env.NEXT_PUBLIC_APIDOMAINNAME}/`,
       headers: {
         Accept: 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': '*',
-        'Access-Control-Allow-Headers': '*',
         ...token && { Authorization: token }
       }
     });
@@ -21,9 +18,9 @@ export class ApiClient {
     if (token) this.authToken = token;
   }
 
-  public authenticate(authToken?: string) {
-    this.config.headers!.Authorization = authToken ?? this.authToken;
-    return this;
+  public setAuthToken(authToken: string) {
+    this.authToken = authToken;
+    this.client.defaults.headers.common.Authorization = authToken;
   }
 
   public async get<T>(route: string, options?: AxiosRequestConfig): Promise<T> {

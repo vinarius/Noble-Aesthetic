@@ -5,6 +5,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 
 import { authSlice } from './slices/auth';
+import { userSlice } from './slices/user';
 
 const middleware = [];
 
@@ -15,7 +16,8 @@ if (process.env.NEXT_PUBLIC_STAGE !== 'prod') {
 }
 
 const rootReducer = combineReducers({
-  auth: authSlice.reducer
+  auth: authSlice.reducer,
+  user: userSlice.reducer
 });
 
 const persistedReducer = persistReducer(

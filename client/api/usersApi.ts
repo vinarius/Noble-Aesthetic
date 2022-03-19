@@ -1,10 +1,10 @@
 import {
   ApiResponse,
   CodeDeliveryDetails,
-  LoginResponse,
   RefreshTokenResponse,
   SignupResponse,
 } from '../models/api/response';
+import { LoginResponse } from '../models/api/users';
 import { UserDetails } from '../models/app';
 import { AuthFormData } from '../models/auth';
 import { ApiClient } from './apiClient';
@@ -106,7 +106,7 @@ export function getUsersApi(api: ApiClient) {
      * Initiate authentication
      */
     login: async ({ email, password }: AuthFormData): Promise<ApiResponse<LoginResponse>> => {
-      return await api
+      const {  } = await api
         .post(
           `${basePath}/login`,
           buildRequestBody({
