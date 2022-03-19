@@ -47,6 +47,8 @@ export interface ConfirmSignUpUserReqBody {
 }
 
 export interface DynamoUserItem {
+  userName: string;
+  dataKey: string;
   address: {
     line1: string;
     line2: string;
@@ -55,20 +57,11 @@ export interface DynamoUserItem {
     zip: string;
     country: string;
   };
-  biography: string;
   birthdate: string;
-  dataKey: string;
   firstName: string;
   gender: 'M'|'F'|'';
   lastName: string;
   phoneNumber: string;
-  trial: {
-    dateEnded: string;
-    dateStarted: string;
-    isActive: boolean;
-    isExpired: boolean;
-  }
-  userName: string;
 }
 
 export interface DynamoUserSessionItem {
@@ -349,8 +342,7 @@ const confirmSignUpUserSchema: Schema = {
       required: [
         'appClientId',
         'userName',
-        'confirmationCode',
-        'birthdate'
+        'confirmationCode'
       ],
       properties: {
         appClientId: {
@@ -360,9 +352,6 @@ const confirmSignUpUserSchema: Schema = {
           type: jsonType.STRING
         },
         confirmationCode: {
-          type: jsonType.STRING
-        },
-        birthdate: {
           type: jsonType.STRING
         }
       }

@@ -13,16 +13,16 @@ interface SignUpResponse extends HandlerResponse {
 }
 
 const {
-  mobileAppClientId = ''
+  webAppClientId = ''
 } = process.env;
 
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
 const signUpHandler = async (event: APIGatewayProxyEvent): Promise<SignUpResponse> => {
-  validateEnvVars(['mobileAppClientId']);
+  validateEnvVars(['webAppClientId']);
 
   const params: ResendConfirmationCodeReqBody = JSON.parse(event.body ?? '{}');
-  const validClientIds = [mobileAppClientId];
+  const validClientIds = [webAppClientId];
 
   const isValid = validateResendConfirmationCode(params);
   if (!isValid) throw {

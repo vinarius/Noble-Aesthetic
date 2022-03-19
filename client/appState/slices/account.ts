@@ -11,7 +11,7 @@ interface AuthState {
   tokenExpiration?: DateTime;
 }
 
-interface SetLoginPayload {
+interface SetAuthTokensPayload {
   AccessToken: string;
   ExpiresIn: number;
   IdToken: string;
@@ -26,7 +26,7 @@ export const authSlice = createSlice({
   name: 'authSlice',
   initialState,
   reducers: {
-    setLogin: (state, action: PayloadAction<SetLoginPayload>) => {
+    setAuthTokens: (state, action: PayloadAction<SetAuthTokensPayload>) => {
       state.accessToken = action.payload.AccessToken;
       state.idToken = action.payload.IdToken;
       state.isLoggedIn = true;
@@ -37,5 +37,5 @@ export const authSlice = createSlice({
 });
 
 export const {
-  setLogin
+  setAuthTokens
 } = authSlice.actions;

@@ -13,16 +13,16 @@ interface ForgotPasswordResponse extends HandlerResponse {
 }
 
 const {
-  mobileAppClientId = ''
+  webAppClientId = ''
 } = process.env;
 
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
 const forgotPasswordHandler = async (event: APIGatewayProxyEvent): Promise<ForgotPasswordResponse> => {
-  validateEnvVars(['mobileAppClientId']);
+  validateEnvVars(['webAppClientId']);
 
   const userParams: ForgotPasswordReqBody = JSON.parse(event.body ?? '{}');
-  const validClientIds = [mobileAppClientId];
+  const validClientIds = [webAppClientId];
 
   const isValid = validateForgotPassword(userParams);
   if (!isValid) throw {

@@ -2,9 +2,9 @@ import { CfnOutput, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import {
   AuthorizationType,
   CognitoUserPoolsAuthorizer,
+  Cors,
   LambdaIntegration,
   MethodOptions,
-  Resource,
   RestApi
 } from 'aws-cdk-lib/aws-apigateway';
 import { ClientAttributes, UserPool, UserPoolClient } from 'aws-cdk-lib/aws-cognito';
@@ -49,7 +49,7 @@ export class UsersStack extends Stack {
           required: true
         }
       },
-      selfSignUpEnabled: stage === 'prod',
+      selfSignUpEnabled: true,
       userPoolName: `${project}-${stack}-pool-${stage}`,
       removalPolicy
     });
@@ -483,10 +483,14 @@ export class UsersStack extends Stack {
         const childResourceName = customApiPath ?? name;
 
         const apiRoute = apiSpecificRoute.getResource(childResourceName) ??
-          new Resource(this, `${project}-${stack}-${name}Api-${stage}`, {
-            parent: apiSpecificRoute,
-            pathPart: childResourceName
-          });
+        apiSpecificRoute.addResource(childResourceName, {
+          defaultCorsPreflightOptions: {
+            allowOrigins: Cors.ALL_ORIGINS,
+            allowHeaders: ['*'],
+            allowCredentials: true,
+            allowMethods: Cors.ALL_METHODS          
+          }
+        });
 
         const apiMethod = apiRoute.addMethod(
           httpMethod as HttpMethod,

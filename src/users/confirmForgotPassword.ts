@@ -11,14 +11,14 @@ import { ConfirmForgotPasswordReqBody, validateConfirmForgotPassword } from '../
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
 const {
-  mobileAppClientId = ''
+  webAppClientId = ''
 } = process.env;
 
 const confirmForgotPasswordHandler = async (event: APIGatewayProxyEvent): Promise<HandlerResponse> => {
-  validateEnvVars(['mobileAppClientId']);
+  validateEnvVars(['webAppClientId']);
 
   const userParams: ConfirmForgotPasswordReqBody = JSON.parse(event.body ?? '{}');
-  const validClientIds = [mobileAppClientId];
+  const validClientIds = [webAppClientId];
 
   const isValid = validateConfirmForgotPassword(userParams);
   if (!isValid) throw {

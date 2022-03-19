@@ -14,7 +14,7 @@ import { ConfirmSignUpUserReqBody, DynamoUserItem, validateConfirmSignUpUser } f
 const {
   usersTableName = '',
   userPoolId = '',
-  mobileAppClientId = ''
+  webAppClientId = ''
 } = process.env;
 
 const dynamoClient = new DynamoDBClient({ ...retryOptions });
@@ -25,11 +25,11 @@ const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<Handle
   validateEnvVars([
     'usersTableName', 
     'userPoolId',
-    'mobileAppClientId'
+    'webAppClientId'
   ]);
   
   const params: ConfirmSignUpUserReqBody = JSON.parse(event.body ?? '{}');
-  const validClientIds = [mobileAppClientId];
+  const validClientIds = [webAppClientId];
 
   const isValid = validateConfirmSignUpUser(params);
   if (!isValid) throw {
@@ -41,8 +41,7 @@ const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<Handle
   const {
     appClientId,
     userName,
-    confirmationCode,
-    birthdate
+    confirmationCode
   } = params.input;
 
   if (!validClientIds.includes(appClientId)) {
@@ -57,10 +56,9 @@ const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<Handle
     throw err.name?.toLowerCase() === 'codemismatchexception' ? codeMismatchError : err;
   });
 
-  // More details on the dates will be added in the future release.
-  const timestamp = new Date().toISOString();
-
   const newUser: DynamoUserItem = {
+    userName,
+    dataKey: 'details',
     address: {
       line1: '',
       line2: '',
@@ -69,20 +67,11 @@ const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<Handle
       zip: '',
       country: ''
     },
-    biography: '',
-    birthdate,
-    dataKey: 'details',
+    birthdate: '',
     firstName: '',
     gender: '',
     lastName: '',
-    phoneNumber: '',
-    trial: {
-      dateEnded: '',
-      dateStarted: timestamp,
-      isActive: false,
-      isExpired: false
-    },
-    userName
+    phoneNumber: ''
   };
 
   await docClient.put({
