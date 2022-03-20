@@ -60,7 +60,8 @@ export class CICDStack extends Stack {
                 effect: Effect.ALLOW,
                 actions: ['s3:*'],
                 resources: [
-                  hostBucketArn
+                  hostBucketArn,
+                  `${hostBucketArn}/*`
                 ]
               })
             ]
