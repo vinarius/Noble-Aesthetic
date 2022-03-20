@@ -3,16 +3,22 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { confirmForgotPassword } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
-import { retryOptions, validateEnvVars } from '../../lib/utils';
+import { retryOptions } from '../../lib/retryOptions';
+import { validateEnvVars } from '../../lib/validateEnvVars';
 import { HandlerResponse } from '../../models/response';
 import { ConfirmForgotPasswordReqBody, validateConfirmForgotPassword } from '../../models/user';
 
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
+const {
+  webAppClientId = ''
+} = process.env;
+
 const confirmForgotPasswordHandler = async (event: APIGatewayProxyEvent): Promise<HandlerResponse> => {
-  validateEnvVars([]);
+  validateEnvVars(['webAppClientId']);
 
   const userParams: ConfirmForgotPasswordReqBody = JSON.parse(event.body ?? '{}');
+  const validClientIds = [webAppClientId];
 
   const isValid = validateConfirmForgotPassword(userParams);
   if (!isValid) throw {
@@ -23,19 +29,27 @@ const confirmForgotPasswordHandler = async (event: APIGatewayProxyEvent): Promis
 
   const {
     appClientId,
-    username,
+    userName,
     proposedPassword,
     confirmationCode
   } = userParams.input;
 
+  if (!validClientIds.includes(appClientId)) {
+    throw {
+      success: false,
+      error: `Appclient ID '${appClientId}' is invalid`,
+      statusCode: 401
+    };
+  }
+
   await confirmForgotPassword(
     cognitoClient,
     appClientId,
-    username,
+    userName,
     proposedPassword,
     confirmationCode
   );
-
+    
   return {
     success: true
   };

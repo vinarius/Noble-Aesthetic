@@ -16,6 +16,7 @@ export interface ApplicationDefinition extends StageDefinition {
   project: string;
   stage: string;
   isStagingEnv: boolean;
+  profile: string;
 }
 
 export const project = 'noble';
@@ -33,7 +34,7 @@ export const stages: StageDefinition[] = [
     deployMfa: true,
     domainName: '',
     certificateId: '',
-    apiDomainName: ''
+    apiDomainName: 'api.dev.nobleaesthetic.com'
   },
   {
     branch: 'develop',

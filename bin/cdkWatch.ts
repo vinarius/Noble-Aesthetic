@@ -1,15 +1,22 @@
-import { exec, getAppConfig } from '../lib/utils';
+import { getAppConfig } from '../lib/getAppConfig';
+import { spawn } from '../lib/spawn';
+import { validateAwsProfile } from '../lib/validateAwsProfile';
 
 async function cdkWatch(): Promise<void> {
-  const { alias, deployMfa } = await getAppConfig();
-  const profile: string = deployMfa ? `${alias}-token` : alias;
-  console.log();
-  console.log(`>>> Using profile ${profile}`);
-  console.log();
-  await exec(`npm run cdk -- watch --profile ${profile}`);
+  const { IS_JEST } = process.env;
+  
+  try {
+    const { profile } = await getAppConfig();
+    
+    await validateAwsProfile(profile);
+
+    spawn(`npm run cdk -- watch --profile ${profile}`);
+  } catch (error) {
+    const { name, message } = error as Error;
+    console.error(`${name}: ${message}`);
+
+    if (!IS_JEST) process.exit(1);
+  }
 }
 
-cdkWatch().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+cdkWatch();

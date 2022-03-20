@@ -1,33 +1,42 @@
-import { CognitoIdentityProviderClient, InitiateAuthCommandOutput } from '@aws-sdk/client-cognito-identity-provider';
+import { AuthenticationResultType, CognitoIdentityProviderClient, InitiateAuthCommandOutput } from '@aws-sdk/client-cognito-identity-provider';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { login } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
-import { retryOptions, validateEnvVars } from '../../lib/utils';
+import { retryOptions } from '../../lib/retryOptions';
+import { validateEnvVars } from '../../lib/validateEnvVars';
 import { notAuthorizedError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { DynamoUserItem, LoginReqBody, validateLogin } from '../../models/user';
 
 interface LoginResponse extends HandlerResponse {
-  result: InitiateAuthCommandOutput;
+  payload: {
+    AccessToken?: string;
+    ExpiresIn?: number;
+    IdToken?: string;
+    RefreshToken?: string;
+  };
   user: DynamoUserItem;
 }
 
 const {
-  usersTableName = ''
+  usersTableName = '',
+  webAppClientId = ''
 } = process.env;
 
-const primaryKey = 'email';
 const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
 const loginHandler = async (event: APIGatewayProxyEvent): Promise<LoginResponse> => {
-  validateEnvVars(['usersTableName']);
+  validateEnvVars(['usersTableName', 'webAppClientId']);
   
+  const partitionKey = 'userName';
+  const sortKey = 'dataKey';
   const params: LoginReqBody = JSON.parse(event.body ?? '{}');
+  const validClientIds = [webAppClientId];
 
   const isValid = validateLogin(params);
   if (!isValid) throw {
@@ -38,34 +47,44 @@ const loginHandler = async (event: APIGatewayProxyEvent): Promise<LoginResponse>
 
   const {
     appClientId,
-    username,
+    userName,
     password
   } = params.input;
 
-  const result: InitiateAuthCommandOutput = await login(cognitoClient, appClientId, username, password).catch(err => {
+  if (!validClientIds.includes(appClientId)) {
+    throw {
+      success: false,
+      error: `Appclient ID '${appClientId}' is Invalid`,
+      statusCode: 401
+    };
+  }
+
+  const result: InitiateAuthCommandOutput = await login(cognitoClient, appClientId, userName, password).catch(err => {
     throw err.name?.toLowerCase() === 'notauthorizedexception' ? notAuthorizedError : err;
   });
 
   const itemQuery = await docClient.query({
     TableName: usersTableName,
-    IndexName: 'email_index',
-    KeyConditionExpression: `${primaryKey} = :${primaryKey}`,
+    KeyConditionExpression: `${partitionKey} = :${partitionKey} and ${sortKey} = :${sortKey}`,
     ExpressionAttributeValues: {
-      [`:${primaryKey}`]: username
+      [`:${partitionKey}`]: userName,
+      [`:${sortKey}`]: 'details'
     }
   });
 
   if (itemQuery.Count === 0) throw {
     success: false,
-    error: `Username '${username}' not found in dynamo database`,
+    error: `Username '${userName}' not found in dynamo database`,
     statusCode: 404
   };
 
   const user = itemQuery.Items?.[0] as DynamoUserItem;
 
+  const { AccessToken, ExpiresIn, IdToken, RefreshToken } = result.AuthenticationResult as AuthenticationResultType;
+
   return {
     success: true,
-    result,
+    payload: { AccessToken, ExpiresIn, IdToken, RefreshToken },
     user
   };
 };

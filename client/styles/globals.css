@@ -4,4 +4,10 @@
 
 html, body {
   min-width: 320px;
+  min-height: 100vh;
+}
+
+#__next {
+  min-width: 320px;
+  min-height: 100vh;
 }

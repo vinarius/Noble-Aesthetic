@@ -4,7 +4,8 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { scan } from '../../lib/dynamo';
 import { setDefaultProps } from '../../lib/lambda';
-import { retryOptions, validateEnvVars } from '../../lib/utils';
+import { retryOptions } from '../../lib/retryOptions';
+import { validateEnvVars } from '../../lib/validateEnvVars';
 import { DynamoUserItem } from '../../models/user';
 
 interface GetUsersResponse {

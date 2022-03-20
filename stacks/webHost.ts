@@ -1,12 +1,11 @@
-import { App, Aws, RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { App, Aws, CfnOutput, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { BlockPublicAccess, Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
-import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
-import { resolve } from 'path';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 import { NobleStackProps } from '../models/cloudResources';
 
@@ -24,7 +23,8 @@ export class WebHostStack extends Stack {
       stage,
       isStagingEnv,
       domainName,
-      certificateId
+      certificateId,
+      stack
     } = props;
 
     const removalPolicy = isStagingEnv ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY;
@@ -44,6 +44,15 @@ export class WebHostStack extends Stack {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL
     });
 
+    new StringParameter(this, `${project}-${stack}-hostBucketArnParam-${stage}`, {
+      parameterName: `/${project}/${stack}/hostbucketArn/${stage}`,
+      stringValue: hostBucket.bucketArn
+    });
+
+    new CfnOutput(this, `${project}-hostBucketNameOutput-${stage}`, {
+      value: hostBucket.bucketName
+    });
+
     const distribution = new Distribution(this, `${project}-siteDistribution-${stage}`, {
       defaultBehavior: {
         origin: new S3Origin(hostBucket),
@@ -58,6 +67,16 @@ export class WebHostStack extends Stack {
 
     distribution.applyRemovalPolicy(removalPolicy);
 
+    new CfnOutput(this, `${project}-siteDistributionIdOutput-${stage}`, {
+      value: distribution.distributionId
+    });
+
+    if (!isStagingEnv) {
+      new CfnOutput(this, `${project}-siteDistributionDomainNameOutput-${stage}`, {
+        value: distribution.distributionDomainName
+      });
+    }
+
     if (isStagingEnv) {
       const zone = HostedZone.fromLookup(this, `${project}-hostedZoneLookup-${stage}`, { domainName });
 
@@ -66,13 +85,5 @@ export class WebHostStack extends Stack {
         target: RecordTarget.fromAlias(new CloudFrontTarget(distribution))
       });
     }
-
-    new BucketDeployment(this, `${project}-bucketDeploy-${stage}`, {
-      destinationBucket: hostBucket,
-      sources: [
-        Source.asset(resolve(__dirname, '..', 'dist', 'client'))
-      ],
-      distribution
-    });
   }
 }

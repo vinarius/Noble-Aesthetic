@@ -5,7 +5,8 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { adminResetUserPassword } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
-import { retryOptions, validateEnvVars } from '../../lib/utils';
+import { retryOptions } from '../../lib/retryOptions';
+import { validateEnvVars } from '../../lib/validateEnvVars';
 import { HandlerResponse } from '../../models/response';
 import { AdminResetUserPasswordReqBody, validateAdminResetPassword } from '../../models/user';
 
@@ -15,13 +16,14 @@ const {
 } = process.env;
 
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
-const primaryKey = 'userId';
 const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
 
 const adminResetPasswordHandler = async (event: APIGatewayProxyEvent): Promise<HandlerResponse> => {
   validateEnvVars(['userPoolId', 'usersTableName']);
 
+  const partitionKey = 'userName';
+  const sortKey = 'data';
   const userParams: AdminResetUserPasswordReqBody = JSON.parse(event.body ?? '{}');
 
   const isValid = validateAdminResetPassword(userParams);
@@ -31,23 +33,24 @@ const adminResetPasswordHandler = async (event: APIGatewayProxyEvent): Promise<H
     statusCode: 400
   };
 
-  const { userId } = userParams.input;
+  const { userName } = userParams.input;
 
   const itemQuery = await docClient.query({
     TableName: usersTableName,
-    KeyConditionExpression: `${primaryKey} = :${primaryKey}`,
+    KeyConditionExpression: `${partitionKey} = :${partitionKey} and ${sortKey} = :${sortKey}`,
     ExpressionAttributeValues: {
-      [`:${primaryKey}`]: userId
+      [`:${partitionKey}`]: userName,
+      [`:${sortKey}`]: 'details'
     }
   });
 
   if (itemQuery.Count === 0) throw {
     success: false,
-    error: `User Id '${userId}' not found`,
+    error: `Username '${userName}' not found`,
     statusCode: 404
   };
 
-  await adminResetUserPassword(cognitoClient, userPoolId, userId);
+  await adminResetUserPassword(cognitoClient, userPoolId, userName);
 
   return {
     success: true

@@ -3,16 +3,18 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 
-import { adminDeleteUserById, adminGetUserById, confirmSignUp } from '../../lib/cognito';
+import { adminDeleteUserByUserName, confirmSignUp } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
-import { retryOptions, validateEnvVars } from '../../lib/utils';
+import { retryOptions } from '../../lib/retryOptions';
+import { validateEnvVars } from '../../lib/validateEnvVars';
 import { codeMismatchError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { ConfirmSignUpUserReqBody, DynamoUserItem, validateConfirmSignUpUser } from '../../models/user';
 
 const {
   usersTableName = '',
-  userPoolId = ''
+  userPoolId = '',
+  webAppClientId = ''
 } = process.env;
 
 const dynamoClient = new DynamoDBClient({ ...retryOptions });
@@ -20,9 +22,14 @@ const docClient = DynamoDBDocument.from(dynamoClient);
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
 const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<HandlerResponse> => {
-  validateEnvVars(['usersTableName', 'userPoolId']);
+  validateEnvVars([
+    'usersTableName', 
+    'userPoolId',
+    'webAppClientId'
+  ]);
   
   const params: ConfirmSignUpUserReqBody = JSON.parse(event.body ?? '{}');
+  const validClientIds = [webAppClientId];
 
   const isValid = validateConfirmSignUpUser(params);
   if (!isValid) throw {
@@ -33,20 +40,25 @@ const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<Handle
 
   const {
     appClientId,
-    username,
-    confirmationCode,
-    birthdate
+    userName,
+    confirmationCode
   } = params.input;
 
-  await confirmSignUp(cognitoClient, appClientId, username, confirmationCode).catch(err => {
+  if (!validClientIds.includes(appClientId)) {
+    throw {
+      success: false,
+      error: `Appclient ID '${appClientId}' is Invalid`,
+      statusCode: 401
+    };
+  }
+  
+  await confirmSignUp(cognitoClient, appClientId, userName, confirmationCode).catch(err => {
     throw err.name?.toLowerCase() === 'codemismatchexception' ? codeMismatchError : err;
   });
 
-  const userId = (await adminGetUserById(cognitoClient, userPoolId, username)).Username as string;
-
-  const timestamp = new Date().toISOString();
-
   const newUser: DynamoUserItem = {
+    userName,
+    dataKey: 'details',
     address: {
       line1: '',
       line2: '',
@@ -55,46 +67,18 @@ const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<Handle
       zip: '',
       country: ''
     },
-    biography: '',
-    birthdate,
-    email: username,
+    birthdate: '',
     firstName: '',
     gender: '',
     lastName: '',
-    phoneNumber: '',
-    subscription: {
-      current: {
-        datePurchased: timestamp,
-        renewalDate: '',
-        tier: 'basic'
-      },
-      history: [
-        {
-          datePurchased: timestamp,
-          renewalDate: '',
-          tier: 'basic'
-        }
-      ],
-      isActive: false,
-      lastPaid: '',
-      nextBilling: '',
-      paymentFrequency: 'na',
-      trial: {
-        dateEnded: '',
-        dateStarted: '',
-        isActive: false,
-        isExpired: false
-      }
-    },
-    userId,
-    vault: []
+    phoneNumber: ''
   };
 
   await docClient.put({
     TableName: usersTableName,
     Item: newUser
   }).catch(async (error) => {
-    await adminDeleteUserById(cognitoClient, userPoolId, username);
+    await adminDeleteUserByUserName(cognitoClient, userPoolId, userName);
     throw error;
   });
 

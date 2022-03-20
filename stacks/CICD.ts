@@ -1,6 +1,7 @@
 import { Aws, Stack } from 'aws-cdk-lib';
 import { EventAction, FilterGroup, LinuxBuildImage, Project, Source } from 'aws-cdk-lib/aws-codebuild';
 import { Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 
 import { repo } from '../config';
@@ -13,8 +14,11 @@ export class CICDStack extends Stack {
     const {
       project,
       stage,
-      branch
+      branch,
+      stack
     } = props;
+
+    const hostBucketArn = StringParameter.fromStringParameterName(this, `${project}-${stack}-hostBucketArnParam-${stage}`, `/${project}/webhost/hostbucketArn/${stage}`).stringValue;
 
     new Project(this, `${project}-codeBuildProject-${stage}`, {
       projectName: `${project}-codeBuildProject-${stage}`,
@@ -50,6 +54,13 @@ export class CICDStack extends Stack {
                 actions: ['sts:assumeRole'],
                 resources: [
                   `arn:${Aws.PARTITION}:iam::${Aws.ACCOUNT_ID}:role/cdk-hnb659fds-*`
+                ]
+              }),
+              new PolicyStatement({
+                effect: Effect.ALLOW,
+                actions: ['s3:*'],
+                resources: [
+                  hostBucketArn
                 ]
               })
             ]

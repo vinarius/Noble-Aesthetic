@@ -1,5 +1,6 @@
 import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { HttpMethod } from './enums';
+
+import { HttpMethod, UserGroup } from './enums';
 
 export interface LambdaDefinition extends Partial<NodejsFunctionProps> {
   name: string; // Must match the file name without the file extension.
@@ -7,6 +8,8 @@ export interface LambdaDefinition extends Partial<NodejsFunctionProps> {
   api?: {
     httpMethod: HttpMethod;
     customApiPath?: string;
-    isAuthNeeded: boolean;
+    auth?: {
+      authorizationScopes: UserGroup[];
+    }
   }
 }

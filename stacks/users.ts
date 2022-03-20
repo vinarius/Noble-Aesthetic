@@ -2,8 +2,9 @@ import { CfnOutput, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import {
   AuthorizationType,
   CognitoUserPoolsAuthorizer,
+  Cors,
   LambdaIntegration,
-  Resource,
+  MethodOptions,
   RestApi
 } from 'aws-cdk-lib/aws-apigateway';
 import { ClientAttributes, UserPool, UserPoolClient } from 'aws-cdk-lib/aws-cognito';
@@ -17,7 +18,7 @@ import { Construct } from 'constructs';
 import { resolve } from 'path';
 
 import { NobleStackProps } from '../models/cloudResources';
-import { HttpMethod } from '../models/enums';
+import { HttpMethod, UserGroup } from '../models/enums';
 import { LambdaDefinition } from '../models/lambda';
 
 export class UsersStack extends Stack {
@@ -48,7 +49,7 @@ export class UsersStack extends Stack {
           required: true
         }
       },
-      selfSignUpEnabled: stage === 'prod',
+      selfSignUpEnabled: true,
       userPoolName: `${project}-${stack}-pool-${stage}`,
       removalPolicy
     });
@@ -81,19 +82,21 @@ export class UsersStack extends Stack {
         phoneNumber: true
       })
     });
-    
+
     webAppClient.applyRemovalPolicy(removalPolicy);
 
-    new CfnOutput(this, `${project}-webClientId-${stage}`, {
-      value: webAppClient.userPoolClientId
-    });
+    new CfnOutput(this, `${project}-webAppClientIdOutput-${stage}`, { value: webAppClient.userPoolClientId });
 
     /**
      * DynamoDB Section
      */
     const usersTable = new Table(this, `${project}-${stack}-table-${stage}`, {
       partitionKey: {
-        name: 'userId',
+        name: 'userName',
+        type: AttributeType.STRING
+      },
+      sortKey: {
+        name: 'dataKey',
         type: AttributeType.STRING
       },
       billingMode: BillingMode.PAY_PER_REQUEST,
@@ -101,23 +104,20 @@ export class UsersStack extends Stack {
       removalPolicy
     });
 
-    usersTable.addGlobalSecondaryIndex({
-      indexName: 'email_index',
-      partitionKey: {
-        name: 'email',
-        type: AttributeType.STRING
-      }
+    new StringParameter(this, `${project}-${stack}-usersTableArnParam-${stage}`, {
+      parameterName: `/${project}/${stack}/usersTableArn/${stage}`,
+      stringValue: usersTable.tableArn
     });
-
+    
     /**
      * API Gateway Section
      */
-    const apiId = StringParameter.fromStringParameterName(this, `${project}-apiIdParam-${stage}`, `/${project}/api/id/${stage}`).stringValue;
-    const rootResourceId = StringParameter.fromStringParameterName(this, `${project}-rootResourceIdParam-${stage}`, `/${project}/api/rootResourceId/${stage}`).stringValue;
+    const apiId = StringParameter.fromStringParameterName(this, `${project}-baseApiIdParam-${stage}`, `/${project}/api/id/${stage}`).stringValue;
+    const baseRootResourceId = StringParameter.fromStringParameterName(this, `${project}-rootResourceIdParam-${stage}`, `/${project}/api/rootResourceId/${stage}`).stringValue;
 
-    const restApi = RestApi.fromRestApiAttributes(this, `${project}-baseApi-${stage}`, {
+    const restApi = RestApi.fromRestApiAttributes(this, `${project}-api-${stage}`, {
       restApiId: apiId,
-      rootResourceId
+      rootResourceId: baseRootResourceId
     });
 
     const apiSpecificRoute = restApi.root.addResource('users'); // api requests map to {domain}/users/...
@@ -128,7 +128,7 @@ export class UsersStack extends Stack {
       resultsCacheTtl: stage === 'prod' ? Duration.minutes(5) : Duration.minutes(0)
     });
 
-    const authMethodOptions = {
+    const authMethodOptions: MethodOptions = {
       authorizationType: AuthorizationType.COGNITO,
       authorizer: cognitoAuthorizer
     };
@@ -144,7 +144,11 @@ export class UsersStack extends Stack {
         api: {
           httpMethod: HttpMethod.PUT,
           customApiPath: 'admin/create',
-          isAuthNeeded: true
+          auth: {
+            authorizationScopes: [
+              UserGroup.ADMIN
+            ]
+          }
         },
         environment: {
           userPoolId: userPool.userPoolId,
@@ -165,8 +169,12 @@ export class UsersStack extends Stack {
         skip: true,
         api: {
           httpMethod: HttpMethod.DELETE,
-          customApiPath: 'admin/{userId}',
-          isAuthNeeded: true
+          customApiPath: 'admin/{userName}',
+          auth: {
+            authorizationScopes: [
+              UserGroup.ADMIN
+            ]
+          }
         },
         environment: {
           userPoolId: userPool.userPoolId,
@@ -188,7 +196,11 @@ export class UsersStack extends Stack {
         api: {
           httpMethod: HttpMethod.POST,
           customApiPath: 'admin/resetPassword',
-          isAuthNeeded: true
+          auth: {
+            authorizationScopes: [
+              UserGroup.ADMIN
+            ]
+          }
         },
         environment: {
           userPoolId: userPool.userPoolId,
@@ -207,7 +219,12 @@ export class UsersStack extends Stack {
         name: 'changePassword',
         api: {
           httpMethod: HttpMethod.POST,
-          isAuthNeeded: true
+          auth: {
+            authorizationScopes: [
+              UserGroup.ADMIN,
+              UserGroup.USER
+            ]
+          }
         },
         initialPolicy: [
           new PolicyStatement({
@@ -221,8 +238,10 @@ export class UsersStack extends Stack {
       {
         name: 'confirmForgotPassword',
         api: {
-          httpMethod: HttpMethod.POST,
-          isAuthNeeded: false
+          httpMethod: HttpMethod.POST
+        },
+        environment: {
+          webAppClientId: webAppClient.userPoolClientId
         },
         initialPolicy: [
           new PolicyStatement({
@@ -236,12 +255,12 @@ export class UsersStack extends Stack {
       {
         name: 'confirmSignUp',
         api: {
-          httpMethod: HttpMethod.POST,
-          isAuthNeeded: false
+          httpMethod: HttpMethod.POST
         },
         environment: {
           userPoolId: userPool.userPoolId,
-          usersTableName: usersTable.tableName
+          usersTableName: usersTable.tableName,
+          webAppClientId: webAppClient.userPoolClientId
         },
         initialPolicy: [
           new PolicyStatement({
@@ -259,8 +278,10 @@ export class UsersStack extends Stack {
       {
         name: 'forgotPassword',
         api: {
-          httpMethod: HttpMethod.POST,
-          isAuthNeeded: false
+          httpMethod: HttpMethod.POST
+        },
+        environment: {
+          webAppClientId: webAppClient.userPoolClientId
         },
         initialPolicy: [
           new PolicyStatement({
@@ -272,11 +293,16 @@ export class UsersStack extends Stack {
         ]
       },
       {
-        name: 'getById',
+        name: 'getByUserName',
         api: {
           httpMethod: HttpMethod.GET,
-          isAuthNeeded: true,
-          customApiPath: '{userId}'
+          auth: {
+            authorizationScopes: [
+              UserGroup.ADMIN,
+              UserGroup.USER
+            ]
+          },
+          customApiPath: '{userName}'
         },
         environment: {
           usersTableName: usersTable.tableName
@@ -287,7 +313,12 @@ export class UsersStack extends Stack {
         skip: true,
         api: {
           httpMethod: HttpMethod.GET,
-          isAuthNeeded: true
+          auth: {
+            authorizationScopes: [
+              UserGroup.ADMIN,
+              UserGroup.USER
+            ]
+          }
         },
         environment: {
           usersTableName: usersTable.tableName
@@ -296,11 +327,11 @@ export class UsersStack extends Stack {
       {
         name: 'login',
         api: {
-          httpMethod: HttpMethod.POST,
-          isAuthNeeded: false
+          httpMethod: HttpMethod.POST
         },
         environment: {
-          usersTableName: usersTable.tableName
+          usersTableName: usersTable.tableName,
+          webAppClientId: webAppClient.userPoolClientId
         },
         initialPolicy: [
           new PolicyStatement({
@@ -319,7 +350,12 @@ export class UsersStack extends Stack {
         name: 'logout',
         api: {
           httpMethod: HttpMethod.POST,
-          isAuthNeeded: true
+          auth: {
+            authorizationScopes: [
+              UserGroup.ADMIN,
+              UserGroup.USER
+            ]
+          }
         },
         initialPolicy: [
           new PolicyStatement({
@@ -334,7 +370,12 @@ export class UsersStack extends Stack {
         name: 'refreshToken',
         api: {
           httpMethod: HttpMethod.POST,
-          isAuthNeeded: true
+          auth: {
+            authorizationScopes: [
+              UserGroup.ADMIN,
+              UserGroup.USER
+            ]
+          }
         },
         initialPolicy: [
           new PolicyStatement({
@@ -348,8 +389,10 @@ export class UsersStack extends Stack {
       {
         name: 'resendConfirmation',
         api: {
-          httpMethod: HttpMethod.POST,
-          isAuthNeeded: false
+          httpMethod: HttpMethod.POST
+        },
+        environment: {
+          webAppClientId: webAppClient.userPoolClientId
         },
         initialPolicy: [
           new PolicyStatement({
@@ -363,8 +406,10 @@ export class UsersStack extends Stack {
       {
         name: 'signUp',
         api: {
-          httpMethod: HttpMethod.POST,
-          isAuthNeeded: false
+          httpMethod: HttpMethod.POST
+        },
+        environment: {
+          webAppClientId: webAppClient.userPoolClientId
         },
         initialPolicy: [
           new PolicyStatement({
@@ -376,11 +421,16 @@ export class UsersStack extends Stack {
         ]
       },
       {
-        name: 'updateById',
+        name: 'updateByUserName',
         api: {
           httpMethod: HttpMethod.POST,
-          isAuthNeeded: true,
-          customApiPath: '{userId}'
+          auth: {
+            authorizationScopes: [
+              UserGroup.ADMIN,
+              UserGroup.USER
+            ]
+          },
+          customApiPath: '{userName}'
         },
         environment: {
           usersTableName: usersTable.tableName
@@ -390,7 +440,12 @@ export class UsersStack extends Stack {
         name: 'verifyToken',
         api: {
           httpMethod: HttpMethod.POST,
-          isAuthNeeded: true
+          auth: {
+            authorizationScopes: [
+              UserGroup.ADMIN,
+              UserGroup.USER
+            ]
+          }
         },
         environment: {
           userPoolId: userPool.userPoolId
@@ -424,20 +479,28 @@ export class UsersStack extends Stack {
       usersTable.grantFullAccess(nodeLambda);
 
       if (api) {
-        const { httpMethod, customApiPath, isAuthNeeded } = api;
-
+        const { httpMethod, customApiPath, auth } = api;
         const childResourceName = customApiPath ?? name;
 
         const apiRoute = apiSpecificRoute.getResource(childResourceName) ??
-          new Resource(this, `${project}-${stack}-${name}Api-${stage}`, {
-            parent: apiSpecificRoute,
-            pathPart: childResourceName
-          });
+        apiSpecificRoute.addResource(childResourceName, {
+          defaultCorsPreflightOptions: {
+            allowOrigins: Cors.ALL_ORIGINS,
+            allowHeaders: ['*'],
+            allowCredentials: true,
+            allowMethods: Cors.ALL_METHODS          
+          }
+        });
 
         const apiMethod = apiRoute.addMethod(
           httpMethod as HttpMethod,
           new LambdaIntegration(nodeLambda),
-          { ...isAuthNeeded && authMethodOptions }
+          { 
+            ...auth && {
+              ...authMethodOptions,
+              authorizationScopes: auth.authorizationScopes
+            }
+          }
         );
 
         // Allows the specific route from api gateway to invoke said lambda function.
