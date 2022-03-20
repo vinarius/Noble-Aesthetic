@@ -3,7 +3,6 @@ import { getUsersApi } from './usersApi';
 
 export class ApiClient {
   private client: AxiosInstance;
-  private authToken: string = '';
   private config: AxiosRequestConfig = { headers: {} };
 
   constructor(token?: string) {
@@ -14,12 +13,9 @@ export class ApiClient {
         ...token && { Authorization: token }
       }
     });
-
-    if (token) this.authToken = token;
   }
 
   public setAuthToken(authToken: string) {
-    this.authToken = authToken;
     this.client.defaults.headers.common.Authorization = authToken;
   }
 

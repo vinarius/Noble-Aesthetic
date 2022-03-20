@@ -1,5 +1,5 @@
 import {
-  ApiResponse,
+  LambdaResponse,
   CodeDeliveryDetails,
   RefreshTokenResponse,
   SignupResponse,
@@ -28,9 +28,8 @@ export function getUsersApi(api: ApiClient) {
       accessToken: string,
       previousPassword: string,
       proposedPassword: string
-    ): Promise<ApiResponse<{ success: boolean }>> => {
+    ): Promise<LambdaResponse<{ success: boolean }>> => {
       return await api
-        .authenticate()
         .post(
           `${basePath}/changePassword`,
           buildRequestBody({
@@ -45,7 +44,7 @@ export function getUsersApi(api: ApiClient) {
     /**
      * Reset a forgotten password
      */
-    confirmForgotPassword: async ({ email, password, confirmationCode }: AuthFormData): Promise<ApiResponse<{ success: boolean }>> => {
+    confirmForgotPassword: async ({ email, password, confirmationCode }: AuthFormData): Promise<LambdaResponse<{ success: boolean }>> => {
       return await api
         .post(
           `${basePath}/confirmForgotPassword`,
@@ -62,7 +61,7 @@ export function getUsersApi(api: ApiClient) {
     /**
      * Self confirm a new user
      */
-    confirmSignUp: async ({ email, confirmationCode }: AuthFormData): Promise<ApiResponse<{ success: boolean }>> => {
+    confirmSignUp: async ({ email, confirmationCode }: AuthFormData): Promise<LambdaResponse<{ success: boolean }>> => {
       return await api
         .post(
           `${basePath}/confirmSignUp`,
@@ -78,7 +77,7 @@ export function getUsersApi(api: ApiClient) {
     /**
      * Reset a user's password with an access token
      */
-    forgotPassword: async ({ email }: AuthFormData): Promise<ApiResponse<CodeDeliveryDetails>> => {
+    forgotPassword: async ({ email }: AuthFormData): Promise<LambdaResponse<CodeDeliveryDetails>> => {
       return await api
         .post(
           `${basePath}/forgotPassword`,
@@ -93,9 +92,8 @@ export function getUsersApi(api: ApiClient) {
     /**
      * Get user by userName
      */
-    getByUserName: async (userName: string): Promise<ApiResponse<{ user: UserDetails }>> => {
+    getByUserName: async (userName: string): Promise<LambdaResponse<{ user: UserDetails }>> => {
       return await api
-        .authenticate()
         .get(
           `${basePath}/${userName}`,
           RequestHeaders
@@ -105,9 +103,9 @@ export function getUsersApi(api: ApiClient) {
     /**
      * Initiate authentication
      */
-    login: async ({ email, password }: AuthFormData): Promise<ApiResponse<LoginResponse>> => {
-      const {  } = await api
-        .post(
+    login: async ({ email, password }: AuthFormData): Promise<LambdaResponse<LoginResponse>> => {
+      return await api
+        .post<LambdaResponse<LoginResponse>>(
           `${basePath}/login`,
           buildRequestBody({
             userName: email,
@@ -121,9 +119,8 @@ export function getUsersApi(api: ApiClient) {
     /**
      * Logout a user
      */
-    logout: async (accessToken: string): Promise<ApiResponse<{ success: boolean }>> => {
+    logout: async (accessToken: string): Promise<LambdaResponse<{ success: boolean }>> => {
       return await api
-        .authenticate()
         .post(
           `${basePath}/logout`,
           buildRequestBody({ accessToken }),
@@ -136,9 +133,8 @@ export function getUsersApi(api: ApiClient) {
      */
     refreshToken: async (
       refreshToken: string,
-    ): Promise<ApiResponse<RefreshTokenResponse>> => {
+    ): Promise<LambdaResponse<RefreshTokenResponse>> => {
       return await api
-        .authenticate()
         .post(
           `${basePath}/refreshToken`,
           buildRequestBody({
@@ -152,7 +148,7 @@ export function getUsersApi(api: ApiClient) {
     /**
      * Resend the confirmation code used to register a new user
      */
-    resendConfirmation: async (username: string): Promise<ApiResponse<CodeDeliveryDetails>> => {
+    resendConfirmation: async (username: string): Promise<LambdaResponse<CodeDeliveryDetails>> => {
       return await api
         .post(
           `${basePath}/resendConfirmation`,
@@ -167,7 +163,7 @@ export function getUsersApi(api: ApiClient) {
     /**
      * Self signup a new user
      */
-    signUp: async ({ email, password }: AuthFormData): Promise<ApiResponse<{ details: SignupResponse }>> => {
+    signUp: async ({ email, password }: AuthFormData): Promise<LambdaResponse<{ details: SignupResponse }>> => {
       return await api
         .post(
           `${basePath}/signUp`,
@@ -183,9 +179,8 @@ export function getUsersApi(api: ApiClient) {
     /**
      * Update user by userName
      */
-    updateByUserName: async (userName: string, details: UserDetails): Promise<ApiResponse<{ user: UserDetails }>> => {
+    updateByUserName: async (userName: string, details: UserDetails): Promise<LambdaResponse<{ user: UserDetails }>> => {
       return await api
-        .authenticate()
         .post(
           `${basePath}/${userName}`,
           buildRequestBody({ ...details }),
@@ -196,9 +191,8 @@ export function getUsersApi(api: ApiClient) {
     /**
      * Verify access token
      */
-    verifyToken: async (accessToken: string): Promise<ApiResponse<{ success: boolean }>> => {
+    verifyToken: async (accessToken: string): Promise<LambdaResponse<{ success: boolean }>> => {
       return await api
-        .authenticate()
         .post(
           `${basePath}/verifyToken`,
           buildRequestBody({

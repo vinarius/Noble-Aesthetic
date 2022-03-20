@@ -1,14 +1,11 @@
+import Router from 'next/router';
 import React, { FormEvent, ReactElement, useState } from 'react';
+
 import { apiClient } from '../api/apiClient';
-import { useAppDispatch } from '../appState/store';
 import { setLogin } from '../appState/slices/auth';
 import { setUser } from '../appState/slices/user';
-
+import { useAppDispatch, useAppSelector } from '../appState/store';
 import styles from './login.module.css';
-import { LoginResponse } from '../models/api/users';
-import Router from 'next/router';
-
-import { useAppSelector } from '../appState/store';
 
 export default function Login(): ReactElement {
   const [username, setUsername] = useState('');
@@ -19,22 +16,33 @@ export default function Login(): ReactElement {
   const handleSubmitLogin = async (event: FormEvent) => {
     event.preventDefault();
     setIsLoggingIn(true);
-    const {  } = await apiClient.users.login({ email: username, password });
+    const { success, error, payload } = await apiClient.users.login({ email: username, password });
 
     if (success) {
-      dispatch(setLogin({
-        ...payload,
-        isLoggedIn: true
-      }));
+      const { AccessToken, ExpiresIn, IdToken, RefreshToken, user } = payload;
+
+      dispatch(
+        setLogin({
+          isLoggedIn: true,
+          AccessToken,
+          ExpiresIn,
+          IdToken,
+          RefreshToken
+        })
+      );
       
       apiClient.axios.setAuthToken(payload.IdToken);
       
-      dispatch(setUser(user));
+      dispatch(
+        setUser(user)
+      );
       
       Router.push('/');
       
       setIsLoggingIn(false);
     }
+
+    if (error) console.error(error);
   };
 
   const isLoggedIn = useAppSelector(state => state.auth.isLoggedIn);
@@ -72,7 +80,9 @@ export default function Login(): ReactElement {
         </button>
         <div
           className={`${!isLoggingIn && 'invisible'}`}
-        >Logging in...</div>
+        >
+          Logging in...
+        </div>
       </div>
       <hr className='to-black h-1 w-3/4 my-3' />
       <p>Forgot Password?</p>

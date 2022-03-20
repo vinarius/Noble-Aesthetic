@@ -1,8 +1,7 @@
-import { UserDetails } from '../app';
 import { ResponseCode } from './code';
 import { ValidationError } from './error';
 
-export interface ApiResponse<T> {
+export interface LambdaResponse<T> {
   statusCode?: ResponseCode;
   success?: boolean;
   payload: T;

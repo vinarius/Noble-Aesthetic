@@ -4,6 +4,7 @@ import { DateTime } from 'luxon';
 
 interface AuthState {
   isLoggedIn: boolean;
+  isAuthHeaderSet: boolean;
   role?: UserGroup;
   accessToken?: string;
   idToken?: string;
@@ -20,13 +21,15 @@ interface SetLoginPayload {
 }
 
 const initialState: AuthState = {
-  isLoggedIn: false
+  isLoggedIn: false,
+  isAuthHeaderSet: false
 };
 
 export const authSlice = createSlice({
   name: 'authSlice',
   initialState,
   reducers: {
+    setAuthHeader: state => { state.isAuthHeaderSet = true },
     setLogin: (state, action: PayloadAction<SetLoginPayload>) => {
       state.accessToken = action.payload.AccessToken;
       state.idToken = action.payload.IdToken;
@@ -38,5 +41,6 @@ export const authSlice = createSlice({
 });
 
 export const {
+  setAuthHeader,
   setLogin
 } = authSlice.actions;

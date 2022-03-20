@@ -16,15 +16,17 @@ export default function Navbar(): ReactElement {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     
-    await apiClient.users.logout(accessToken as string);
+    await apiClient.users.logout(accessToken as string); // TODO: getting a 401 on logout lambda
     
-    dispatch(setLogin({
-      AccessToken: '',
-      ExpiresIn: 0,
-      IdToken: '',
-      isLoggedIn: false,
-      RefreshToken: ''
-    }));
+    dispatch(
+      setLogin({
+        AccessToken: '',
+        ExpiresIn: 0,
+        IdToken: '',
+        isLoggedIn: false,
+        RefreshToken: ''
+      })
+    );
 
     Router.push('/login');
 
@@ -57,8 +59,8 @@ export default function Navbar(): ReactElement {
             </Link>
           </div>
           <div
-            onClick={}
-            className='mx-2'
+            onClick={handleLogout}
+            className='mx-2 cursor-pointer'
           >
             {isLoggingOut ? 'Logging Out...' : 'Logout'}
           </div>
