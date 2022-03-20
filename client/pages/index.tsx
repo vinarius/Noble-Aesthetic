@@ -17,7 +17,6 @@ export default function Home(): ReactElement {
           <p className='text-xl md:text-6xl my-3'>Coming Soon!</p>
         </div>
 
-        {/*         
         <div className='h-96 bg-gray-600 text-white flex items-center'>
           <div className='grid grid-flow-col grid-cols-2 grid-rows-2 ml-10'>
             <p className='text-4xl'>
@@ -93,7 +92,6 @@ export default function Home(): ReactElement {
             </div>
           </div>
         </div>
-        */}
       </main>
     </>
   );
