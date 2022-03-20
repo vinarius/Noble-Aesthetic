@@ -22,7 +22,7 @@ export default function CheckAuth({ Component, pageProps }: CheckAuthProps): Rea
     apiClient.axios.setAuthToken(idToken);
     dispatch(
       setAuthHeader()
-    )
+    );
   }
 
   if (idToken && tokenExpiration && tokenExpiration < DateTime.utc()) {
