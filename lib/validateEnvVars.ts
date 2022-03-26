@@ -1,4 +1,10 @@
+import { LoggerFactory } from './loggerFactory';
+
+const logger = LoggerFactory.getLogger();
+
 export function validateEnvVars(envVars: string[]): Error | void {
+  logger.debug('Validating the following environment variables exist:', envVars);
+
   const unsetEnvVars: string[] = [];
 
   for (const variable of envVars)

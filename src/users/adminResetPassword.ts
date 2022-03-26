@@ -2,11 +2,12 @@ import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-
 import { adminResetUserPassword } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
+import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
+import { buildNotFoundError, buildValidationError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { AdminResetUserPasswordReqBody, validateAdminResetPassword } from '../../models/user';
 
@@ -15,6 +16,7 @@ const {
   usersTableName = ''
 } = process.env;
 
+const logger = LoggerFactory.getLogger();
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
@@ -22,35 +24,32 @@ const docClient = DynamoDBDocument.from(dynamoClient);
 const adminResetPasswordHandler = async (event: APIGatewayProxyEvent): Promise<HandlerResponse> => {
   validateEnvVars(['userPoolId', 'usersTableName']);
 
-  const partitionKey = 'userName';
-  const sortKey = 'data';
+  const partitionKey = 'username';
+  const sortKey = 'dataKey';
   const userParams: AdminResetUserPasswordReqBody = JSON.parse(event.body ?? '{}');
-
   const isValid = validateAdminResetPassword(userParams);
-  if (!isValid) throw {
-    success: false,
-    validationErrors: validateAdminResetPassword.errors ?? [],
-    statusCode: 400
-  };
 
-  const { userName } = userParams.input;
+  logger.debug('partitionKey:', partitionKey);
+  logger.debug('sortKey:', sortKey);
+  logger.debug('userParams:', userParams);
+  logger.debug('isValid:', isValid);
+
+  if (!isValid) throw buildValidationError(validateAdminResetPassword.errors);
+
+  const { username } = userParams.input;
 
   const itemQuery = await docClient.query({
     TableName: usersTableName,
     KeyConditionExpression: `${partitionKey} = :${partitionKey} and ${sortKey} = :${sortKey}`,
     ExpressionAttributeValues: {
-      [`:${partitionKey}`]: userName,
+      [`:${partitionKey}`]: username,
       [`:${sortKey}`]: 'details'
     }
   });
 
-  if (itemQuery.Count === 0) throw {
-    success: false,
-    error: `Username '${userName}' not found`,
-    statusCode: 404
-  };
+  if (itemQuery.Count === 0) throw buildNotFoundError(username);
 
-  await adminResetUserPassword(cognitoClient, userPoolId, userName);
+  await adminResetUserPassword(cognitoClient, userPoolId, username);
 
   return {
     success: true
@@ -58,10 +57,10 @@ const adminResetPasswordHandler = async (event: APIGatewayProxyEvent): Promise<H
 };
 
 export async function handler(event: APIGatewayProxyEvent) {
-  console.log('Event:', JSON.stringify(event));
+  logger.debug('Event:', JSON.stringify(event));
 
   const response = await setDefaultProps(event, adminResetPasswordHandler);
 
-  console.log('Response:', response);
+  logger.debug('Response:', response);
   return response;
 }

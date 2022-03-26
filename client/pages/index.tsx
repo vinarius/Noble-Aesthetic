@@ -5,10 +5,6 @@ import { config } from '../getConfig';
 const { apiDomainName, stage, webAppClientId } = config;
 
 export default function Home(): ReactElement {
-  console.log('apiDomainName:', apiDomainName);
-  console.log('stage:', stage);
-  console.log('webAppClientId:', webAppClientId);
-
   return (
     <>
       <Head>

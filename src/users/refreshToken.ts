@@ -1,9 +1,10 @@
 import { CognitoIdentityProviderClient, InitiateAuthCommandOutput } from '@aws-sdk/client-cognito-identity-provider';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-
 import { refreshUserToken } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
+import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
+import { buildUnknownError, buildValidationError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { RefreshTokenReqBody, validateRefreshToken } from '../../models/user';
 
@@ -11,24 +12,33 @@ interface RefreshTokenResponse extends HandlerResponse {
   details: InitiateAuthCommandOutput;
 }
 
+const logger = LoggerFactory.getLogger();
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
-const refreshTokenHandler = async (event: APIGatewayProxyEvent): Promise<RefreshTokenResponse> => {  
+const refreshTokenHandler = async (event: APIGatewayProxyEvent): Promise<RefreshTokenResponse> => {
   const params: RefreshTokenReqBody = JSON.parse(event.body ?? '{}');
-
   const isValid = validateRefreshToken(params);
-  if (!isValid) throw {
-    success: false,
-    validationErrors: validateRefreshToken.errors ?? [],
-    statusCode: 400
-  };
+
+  logger.debug('params:', params);
+  logger.debug('isValid:', isValid);
+
+  if (!isValid) {
+    logger.debug('refreshToken input was not valid. Throwing an error.');
+    throw buildValidationError(validateRefreshToken.errors);
+  }
 
   const {
     refreshToken,
     appClientId
   } = params.input;
 
-  const details = await refreshUserToken(cognitoClient, appClientId, refreshToken).catch(err => { throw err; });
+  const details = await refreshUserToken(cognitoClient, appClientId, refreshToken)
+    .catch(err => {
+      logger.debug('refreshUserToken operation failed with error:', err);
+      throw buildUnknownError(err);
+    });
+
+  logger.debug('details:', details);
 
   return {
     success: true,
@@ -36,11 +46,11 @@ const refreshTokenHandler = async (event: APIGatewayProxyEvent): Promise<Refresh
   };
 };
 
-export async function handler (event: APIGatewayProxyEvent) {
-  console.log('Event:', JSON.stringify(event));
+export async function handler(event: APIGatewayProxyEvent) {
+  logger.debug('Event:', JSON.stringify(event));
 
   const response = await setDefaultProps(event, refreshTokenHandler);
 
-  console.log('Response:', response);
+  logger.debug('Response:', response);
   return response;
 }

@@ -1,5 +1,5 @@
 export interface UserDetails {
-  userName: string;
+  username: string;
   address?: {
     line1: string;
     line2: string;

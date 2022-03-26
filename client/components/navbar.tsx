@@ -1,13 +1,13 @@
-import React, { ReactElement, useState } from 'react';
-
 import Link from 'next/link';
-import { useAppDispatch, useAppSelector } from '../appState/store';
+import Router from 'next/router';
+import React, { ReactElement, useState } from 'react';
 import { apiClient } from '../api/apiClient';
 import { setLogin } from '../appState/slices/auth';
-import Router from 'next/router';
+import { useAppDispatch, useAppSelector } from '../appState/store';
+
 
 export default function Navbar(): ReactElement {
-  const userName = useAppSelector(state => state.user.userName);
+  const username = useAppSelector(state => state.user.username);
   const accessToken = useAppSelector(state => state.auth.accessToken);
   const dispatch = useAppDispatch();
 
@@ -15,9 +15,9 @@ export default function Navbar(): ReactElement {
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
-    
+
     await apiClient.users.logout(accessToken as string); // TODO: getting a 401 on logout lambda
-    
+
     dispatch(
       setLogin({
         AccessToken: '',
@@ -37,7 +37,7 @@ export default function Navbar(): ReactElement {
     <header className='w-full'>
       <nav className='w-full flex items-center justify-between bg-black text-white text-lg'>
         <div className='m-4 p-1 rounded cursor-pointer'>
-          Profile: {userName}
+          Profile: {username}
         </div>
 
         <div className='flex m-5'>

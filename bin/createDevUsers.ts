@@ -20,7 +20,7 @@ const docClient = DynamoDBDocument.from(dynamoClient);
 export async function createDevUsers(): Promise<void> {
   try {
     const { profile, env } = await getAppConfig();
-    
+
     await validateAwsProfile(profile);
 
     process.env.AWS_PROFILE = profile;
@@ -36,16 +36,16 @@ export async function createDevUsers(): Promise<void> {
     ].map(username => {
       return {
         ...newUser,
-        userName: username
+        username: username
       };
     });
 
     const adminCreateUserPromises = [];
-    for (const { userName } of users) {
+    for (const { username } of users) {
       const adminCreateUserPromise = cognitoClient.send(
         new AdminCreateUserCommand({
           UserPoolId: Id,
-          Username: userName,
+          Username: username,
           MessageAction: 'SUPPRESS',
           UserAttributes: [
             {
@@ -54,7 +54,7 @@ export async function createDevUsers(): Promise<void> {
             },
             {
               Name: 'email',
-              Value: userName
+              Value: username
             }
           ]
         })
@@ -68,10 +68,10 @@ export async function createDevUsers(): Promise<void> {
     });
 
     const adminSetUserPasswordPromises = [];
-    for (const { userName } of users) {
+    for (const { username } of users) {
       const adminSetUserPasswordPromise = cognitoClient.send(
         new AdminSetUserPasswordCommand({
-          Username: userName,
+          Username: username,
           Permanent: true,
           UserPoolId: Id,
           Password: 'PennYpo0!'

@@ -1,13 +1,14 @@
 import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocument, PutCommandInput } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-
+import { DateTime } from 'luxon';
 import { adminDeleteUserByUserName, confirmSignUp } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
+import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { codeMismatchError } from '../../models/error';
+import { buildNotAuthorizedError, buildUnknownError, buildValidationError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { ConfirmSignUpUserReqBody, DynamoUserItem, validateConfirmSignUpUser } from '../../models/user';
 
@@ -17,72 +18,87 @@ const {
   webAppClientId = ''
 } = process.env;
 
+const logger = LoggerFactory.getLogger();
 const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
-export const newUser: DynamoUserItem = {
-  userName: '',
-  dataKey: 'details',
-  address: {
-    line1: '',
-    line2: '',
-    city: '',
-    state: '',
-    zip: '',
-    country: ''
-  },
-  birthdate: '',
-  firstName: '',
-  gender: '',
-  lastName: '',
-  phoneNumber: ''
-};
-
 const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<HandlerResponse> => {
   validateEnvVars([
-    'usersTableName', 
+    'usersTableName',
     'userPoolId',
     'webAppClientId'
   ]);
-  
+
   const params: ConfirmSignUpUserReqBody = JSON.parse(event.body ?? '{}');
   const validClientIds = [webAppClientId];
-
   const isValid = validateConfirmSignUpUser(params);
-  if (!isValid) throw {
-    success: false,
-    validationErrors: validateConfirmSignUpUser.errors ?? [],
-    statusCode: 400
-  };
+
+  logger.debug('params:', params);
+  logger.debug('validClientIds:', validClientIds);
+  logger.debug('isValid:', isValid);
+
+  if (!isValid) {
+    logger.debug('confirmSignUpUser input was not valid. Throwing an error.');
+    throw buildValidationError(validateConfirmSignUpUser.errors);
+  }
 
   const {
     appClientId,
-    userName,
+    username,
     confirmationCode
   } = params.input;
 
   if (!validClientIds.includes(appClientId)) {
-    throw {
-      success: false,
-      error: `Appclient ID '${appClientId}' is Invalid`,
-      statusCode: 401
-    };
+    logger.debug('validClientIds does not include appClientId. Throwing an error.');
+    throw buildNotAuthorizedError(`Appclient ID '${appClientId}' is Invalid`);
   }
-  
-  await confirmSignUp(cognitoClient, appClientId, userName, confirmationCode).catch(err => {
-    throw err.name?.toLowerCase() === 'codemismatchexception' ? codeMismatchError : err;
-  });
 
-  newUser.userName = userName;
+  const confirmSignUpResponse = await confirmSignUp(cognitoClient, appClientId, username, confirmationCode)
+    .catch(err => {
+      logger.debug('confirmSignUp operation failed with error:', err);
+      throw err.name === 'CodeMismatchException' ? buildNotAuthorizedError('Code entered is invalid') : buildUnknownError(err);
+    });
+  logger.debug('confirmSignUpResponse:', confirmSignUpResponse);
 
-  await docClient.put({
+  const timestamp = DateTime.now().toUTC().toFormat('MM/dd/yyyy\'T\'HH:mm:ss.SSS\'Z\'');
+  logger.debug('timestamp:', timestamp);
+
+  const newUser: DynamoUserItem = {
+    username,
+    dataKey: 'details',
+    address: {
+      line1: '',
+      line2: '',
+      city: '',
+      state: '',
+      zip: '',
+      country: ''
+    },
+    birthdate: '',
+    firstName: '',
+    gender: '',
+    lastName: '',
+    phoneNumber: ''
+  };
+
+  logger.debug('newUser:', newUser);
+
+  const putOptions: PutCommandInput = {
     TableName: usersTableName,
     Item: newUser
-  }).catch(async (error) => {
-    await adminDeleteUserByUserName(cognitoClient, userPoolId, userName);
-    throw error;
-  });
+  };
+  logger.debug('putOptions:', putOptions);
+
+  const putResponse = await docClient.put(putOptions)
+    .catch(async (error) => {
+      logger.debug('putResponse operation failed with error:', error);
+      const adminDeleteUserByUserNameResponse = await adminDeleteUserByUserName(cognitoClient, userPoolId, username);
+      logger.debug('adminDeleteUserByUserNameResponse:', adminDeleteUserByUserNameResponse);
+      throw buildUnknownError(error);
+    });
+
+  logger.debug('putResponse:', putResponse);
 
   return {
     success: true
@@ -90,10 +106,10 @@ const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<Handle
 };
 
 export async function handler(event: APIGatewayProxyEvent) {
-  console.log('Event:', JSON.stringify(event));
+  logger.debug('Event:', JSON.stringify(event));
 
   const response = await setDefaultProps(event, confirmSignUpHandler);
 
-  console.log('Response:', response);
+  logger.debug('Response:', response);
   return response;
 }

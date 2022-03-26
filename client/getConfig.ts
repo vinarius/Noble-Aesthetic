@@ -1,4 +1,6 @@
-import { ClientStageDefinition } from '../bin/buildClient';
-import clientConfig from './clientConfig.json';
+import { ClientConfig, ClientStageDefinition } from '../bin/buildClient';
+import clientConfigJson from './clientConfig.json';
 
-export const config = clientConfig.stages.find(stage => stage.stage === process.env.NEXT_PUBLIC_STAGE) as ClientStageDefinition;
+const stage = process.env.NEXT_PUBLIC_STAGE ?? 'dev';
+const clientConfig: ClientConfig = clientConfigJson;
+export const config: ClientStageDefinition = stage in clientConfig ? clientConfig[stage] : clientConfig.dev;

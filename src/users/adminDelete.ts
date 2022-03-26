@@ -2,10 +2,11 @@ import { AdminDeleteUserCommand, CognitoIdentityProviderClient } from '@aws-sdk/
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-
 import { setDefaultProps } from '../../lib/lambda';
+import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
+import { buildNotFoundError, buildUnknownError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 
 const {
@@ -13,6 +14,7 @@ const {
   userPoolId
 } = process.env;
 
+const logger = LoggerFactory.getLogger();
 const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
@@ -20,44 +22,41 @@ const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 const adminDeleteUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<HandlerResponse> => {
   validateEnvVars(['usersTableName', 'userPoolId']);
 
-  const partitionKey = 'userName';
+  const partitionKey = 'username';
   const sortKey = 'dataKey';
-  const userName = event.pathParameters?.[partitionKey] as string;
+  const username = event.pathParameters?.[partitionKey] as string;
+
+  logger.debug('partitionKey:', partitionKey);
+  logger.debug('sortKey:', sortKey);
+  logger.debug('username:', username);
 
   const itemQuery = await docClient.query({
     TableName: usersTableName,
     KeyConditionExpression: `${partitionKey} = :${partitionKey} and ${sortKey} = :${sortKey}`,
     ExpressionAttributeValues: {
-      [`:${partitionKey}`]: userName,
+      [`:${partitionKey}`]: username,
       [`:${sortKey}`]: 'details'
     }
   });
 
-  if (itemQuery.Count === 0) throw {
-    success: false,
-    error: `Username '${userName}' not found`,
-    statusCode: 404
-  };
+  if (itemQuery.Count === 0) throw buildNotFoundError(username);
 
   const originalDynamoItem = await docClient.delete({
-    Key: { userName },
+    Key: { username },
     TableName: usersTableName,
     ReturnValues: 'ALL_OLD'
   });
 
   await cognitoClient.send(new AdminDeleteUserCommand({
     UserPoolId: userPoolId,
-    Username: userName
+    Username: username
   })).catch(async error => {
     await docClient.put({
       TableName: usersTableName,
       Item: originalDynamoItem.Attributes
     });
 
-    throw {
-      success: false,
-      error
-    };
+    throw buildUnknownError(error);
   });
 
   return {
@@ -65,11 +64,11 @@ const adminDeleteUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<
   };
 };
 
-export async function handler (event: APIGatewayProxyEvent) {
-  console.log('Event:', JSON.stringify(event));
+export async function handler(event: APIGatewayProxyEvent) {
+  logger.debug('Event:', JSON.stringify(event));
 
   const response = await setDefaultProps(event, adminDeleteUserByIdHandler);
 
-  console.log('Response:', response);
+  logger.debug('Response:', response);
   return response;
 }

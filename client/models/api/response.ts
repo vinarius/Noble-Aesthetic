@@ -9,16 +9,12 @@ export interface LambdaResponse<T> {
   validationErrors?: ValidationError[];
 }
 
-interface AuthenticationResult {
+export interface AuthenticationResult {
   AccessToken?: string;
   ExpiresIn?: number;
   IdToken?: string;
   RefreshToken?: string;
   TokenType?: string;
-}
-
-export interface RefreshTokenResponse {
-  details: AuthenticationResult;
 }
 
 export interface CodeDeliveryDetails {

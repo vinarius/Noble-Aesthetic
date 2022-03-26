@@ -4,13 +4,13 @@ import { resolveFromRoot } from '../lib/resolveFromRoot';
 import { spawn } from '../lib/spawn';
 
 export interface ClientStageDefinition {
-  stage: string;
   apiDomainName: string;
   webAppClientId: string;
+  stage: string;
 }
 
 export interface ClientConfig {
-  stages: ClientStageDefinition[];
+  [key: string]: ClientStageDefinition;
 }
 
 async function setEnvVars(): Promise<void> {
@@ -27,7 +27,7 @@ async function setEnvVars(): Promise<void> {
     const webAppClientId = cdkOutputsRaw[`${project}-usersStack-${stage}`][`${project}webAppClientIdOutput${stage.replace(/\W/g, '')}`];
     const apiUrl = cdkOutputsRaw[`${project}-apiStack-${stage}`][`${project}apiUrlOutput${stage.replace(/\W/g, '')}`];
 
-    const envVars = {
+    const envVars: ClientStageDefinition = {
       stage,
       apiDomainName: isStagingEnv ? apiDomainName : apiUrl,
       webAppClientId
@@ -37,18 +37,16 @@ async function setEnvVars(): Promise<void> {
 
     if (!existsSync(clientConfigPath)) {
       const defaultClientConfig: ClientConfig = {
-        stages: [
-          {
-            stage: 'dev',
-            apiDomainName: '',
-            webAppClientId: ''
-          },
-          {
-            stage: 'prod',
-            apiDomainName: '',
-            webAppClientId: ''
-          }
-        ]
+        dev: {
+          apiDomainName: '',
+          webAppClientId: '',
+          stage
+        },
+        prod: {
+          apiDomainName: '',
+          webAppClientId: '',
+          stage
+        }
       };
 
       writeFileSync(clientConfigPath, JSON.stringify(defaultClientConfig));
@@ -56,7 +54,8 @@ async function setEnvVars(): Promise<void> {
 
     const clientConfigOriginal = JSON.parse(readFileSync(clientConfigPath).toString()) as ClientConfig;
     const clientConfigRefreshed: ClientConfig = {
-      stages: clientConfigOriginal.stages.map(stageDefinition => stageDefinition.stage === stage ? envVars : stageDefinition)
+      [stage]: envVars,
+      ...clientConfigOriginal
     };
 
     writeFileSync(clientConfigPath, JSON.stringify(clientConfigRefreshed));

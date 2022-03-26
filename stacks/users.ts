@@ -100,7 +100,7 @@ export class UsersStack extends Stack {
      */
     const usersTable = new Table(this, `${project}-${stack}-table-${stage}`, {
       partitionKey: {
-        name: 'userName',
+        name: 'username',
         type: AttributeType.STRING
       },
       sortKey: {
@@ -177,7 +177,7 @@ export class UsersStack extends Stack {
         skip: true,
         api: {
           httpMethod: HttpMethod.DELETE,
-          customApiPath: 'admin/{userName}',
+          customApiPath: 'admin/{username}',
           auth: {
             authorizationScopes: [
               UserGroup.ADMIN
@@ -310,7 +310,7 @@ export class UsersStack extends Stack {
               UserGroup.USER
             ]
           },
-          customApiPath: '{userName}'
+          customApiPath: '{username}'
         },
         environment: {
           usersTableName: usersTable.tableName
@@ -438,7 +438,7 @@ export class UsersStack extends Stack {
               UserGroup.USER
             ]
           },
-          customApiPath: '{userName}'
+          customApiPath: '{username}'
         },
         environment: {
           usersTableName: usersTable.tableName

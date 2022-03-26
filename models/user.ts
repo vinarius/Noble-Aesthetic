@@ -16,7 +16,7 @@ enum jsonType {
 
 export interface AdminResetUserPasswordReqBody {
   input: {
-    userName: string;
+    username: string;
   }
 }
 
@@ -31,7 +31,7 @@ export interface ChangePasswordReqBody {
 export interface ConfirmForgotPasswordReqBody {
   input: {
     appClientId: string;
-    userName: string;
+    username: string;
     proposedPassword: string;
     confirmationCode: string;
   }
@@ -40,14 +40,14 @@ export interface ConfirmForgotPasswordReqBody {
 export interface ConfirmSignUpUserReqBody {
   input: {
     appClientId: string;
-    userName: string;
+    username: string;
     confirmationCode: string;
     birthdate: string;
   }
 }
 
 export interface DynamoUserItem {
-  userName: string;
+  username: string;
   dataKey: string;
   address: {
     line1: string;
@@ -59,13 +59,13 @@ export interface DynamoUserItem {
   };
   birthdate: string;
   firstName: string;
-  gender: 'M'|'F'|'';
+  gender: 'M' | 'F' | '';
   lastName: string;
   phoneNumber: string;
 }
 
 export interface DynamoUserSessionItem {
-  userName: string;
+  username: string;
   dataKey: string;
   sessionData: {
     averageSplitTime: string;
@@ -81,7 +81,7 @@ export interface DynamoUserSessionItem {
 }
 
 export interface DynamoUserVaultItem {
-  userName: string;
+  username: string;
   dataKey: string; //VAULT_{uuid4}
   vault: {
     ammo: {
@@ -114,7 +114,7 @@ export interface DynamoUserVaultItem {
 }
 
 export interface DynamoUserSubscriptionItem {
-  userName: string;
+  username: string;
   isActive: false,
   lastPaid: '',
   nextBilling: '',
@@ -123,13 +123,13 @@ export interface DynamoUserSubscriptionItem {
   datePurchased: string; //TODO: update later with luxon
   latest?: number;
   renewalDate?: string; //TODO: update later with luxon only for premium user
-  tier: 'basic'|'premium';
+  tier: 'basic' | 'premium';
 }
 
 export interface putSessionReqBody {
   input: {
     session: {
-      userName: string;
+      username: string;
       averageSplitTime: string;
       shotsOnTarget: {
         timestamp: string;
@@ -145,14 +145,14 @@ export interface putSessionReqBody {
 export interface ForgotPasswordReqBody {
   input: {
     appClientId: string;
-    userName: string;
+    username: string;
   }
 }
 
 export interface LoginReqBody {
   input: {
     appClientId: string;
-    userName: string;
+    username: string;
     password: string;
   }
 }
@@ -173,14 +173,14 @@ export interface RefreshTokenReqBody {
 export interface ResendConfirmationCodeReqBody {
   input: {
     appClientId: string;
-    userName: string;
+    username: string;
   }
 }
 
 export interface SignUpUserReqBody {
   input: {
     appClientId: string;
-    userName: string;
+    username: string;
     password: string;
   }
 }
@@ -214,11 +214,11 @@ const adminCreateUserSchema: Schema = {
   type: jsonType.OBJECT,
   additionalProperties: false,
   required: [
-    'userName',
+    'username',
     'phoneNumber'
   ],
   properties: {
-    userName: { type: jsonType.STRING },
+    username: { type: jsonType.STRING },
     phoneNumber: { type: jsonType.STRING },
     firstName: { type: jsonType.STRING },
     lastName: { type: jsonType.STRING },
@@ -308,7 +308,7 @@ const confirmForgotPasswordSchema: Schema = {
       additionalProperties: false,
       required: [
         'appClientId',
-        'userName',
+        'username',
         'proposedPassword',
         'confirmationCode'
       ],
@@ -316,7 +316,7 @@ const confirmForgotPasswordSchema: Schema = {
         appClientId: {
           type: jsonType.STRING
         },
-        userName: {
+        username: {
           type: jsonType.STRING
         },
         proposedPassword: {
@@ -342,14 +342,14 @@ const confirmSignUpUserSchema: Schema = {
       additionalProperties: false,
       required: [
         'appClientId',
-        'userName',
+        'username',
         'confirmationCode'
       ],
       properties: {
         appClientId: {
           type: jsonType.STRING
         },
-        userName: {
+        username: {
           type: jsonType.STRING
         },
         confirmationCode: {
@@ -372,13 +372,13 @@ const forgotPasswordSchema: Schema = {
       additionalProperties: false,
       required: [
         'appClientId',
-        'userName'
+        'username'
       ],
       properties: {
         appClientId: {
           type: jsonType.STRING
         },
-        userName: {
+        username: {
           type: jsonType.STRING
         }
       }
@@ -398,14 +398,14 @@ const loginSchema: Schema = {
       additionalProperties: false,
       required: [
         'appClientId',
-        'userName',
+        'username',
         'password'
       ],
       properties: {
         appClientId: {
           type: jsonType.STRING
         },
-        userName: {
+        username: {
           type: jsonType.STRING
         },
         password: {
@@ -476,13 +476,13 @@ const resendConfirmationCodeSchema: Schema = {
       additionalProperties: false,
       required: [
         'appClientId',
-        'userName'
+        'username'
       ],
       properties: {
         appClientId: {
           type: jsonType.STRING
         },
-        userName: {
+        username: {
           type: jsonType.STRING
         }
       }
@@ -502,14 +502,14 @@ const signUpUserSchema: Schema = {
       additionalProperties: false,
       required: [
         'appClientId',
-        'userName',
+        'username',
         'password'
       ],
       properties: {
         appClientId: {
           type: jsonType.STRING
         },
-        userName: {
+        username: {
           type: jsonType.STRING
         },
         password: {
@@ -532,7 +532,7 @@ const updateUserSchema: Schema = {
       additionalProperties: false,
       required: [],
       properties: {
-        userName: { type: jsonType.STRING },
+        username: { type: jsonType.STRING },
         phoneNumber: { type: jsonType.STRING },
         firstName: { type: jsonType.STRING },
         lastName: { type: jsonType.STRING },
@@ -598,7 +598,7 @@ const putSessionSchema: Schema = {
             'shotsOnTarget',
             'timeStart',
             'timeEnd',
-            'userName'
+            'username'
           ],
           properties: {
             averageSplitTime: {
@@ -632,7 +632,7 @@ const putSessionSchema: Schema = {
                 }
               }
             },
-            userName: {
+            username: {
               type: jsonType.STRING
             }
           }

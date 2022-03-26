@@ -1,9 +1,6 @@
 import { config } from '../getConfig';
-import {
-  CodeDeliveryDetails, LambdaResponse, RefreshTokenResponse,
-  SignupResponse
-} from '../models/api/response';
-import { LoginResponse } from '../models/api/users';
+import { LambdaResponse } from '../models/api/response';
+import { ChangePasswordResponse, ConfirmForgotPasswordResponse, ConfirmSignUpResponse, ForgotPasswordResponse, GetByUserNameResponse, LoginResponse, LogoutResponse, RefreshTokenResponse, ResendConfirmationResponse, SignUpResponse, UpdateByUserNameResponse, VerifyTokenResponse } from '../models/api/users';
 import { UserDetails } from '../models/app';
 import { AuthFormData } from '../models/auth';
 import { ApiClient } from './apiClient';
@@ -28,9 +25,9 @@ export function getUsersApi(api: ApiClient) {
       accessToken: string,
       previousPassword: string,
       proposedPassword: string
-    ): Promise<LambdaResponse<{ success: boolean }>> => {
+    ): Promise<LambdaResponse<ChangePasswordResponse>> => {
       return await api
-        .post(
+        .post<LambdaResponse<ChangePasswordResponse>>(
           `${basePath}/changePassword`,
           buildRequestBody({
             accessToken,
@@ -38,66 +35,66 @@ export function getUsersApi(api: ApiClient) {
             proposedPassword
           }),
           RequestHeaders
-        );
+        ).catch(err => err);
     },
 
     /**
      * Reset a forgotten password
      */
-    confirmForgotPassword: async ({ email, password, confirmationCode }: AuthFormData): Promise<LambdaResponse<{ success: boolean }>> => {
+    confirmForgotPassword: async ({ email, password, confirmationCode }: AuthFormData): Promise<LambdaResponse<ConfirmForgotPasswordResponse>> => {
       return await api
-        .post(
+        .post<LambdaResponse<ConfirmForgotPasswordResponse>>(
           `${basePath}/confirmForgotPassword`,
           buildRequestBody({
-            userName: email,
+            username: email,
             proposedPassword: password,
             confirmationCode,
             appClientId
           }),
           RequestHeaders
-        );
+        ).catch(err => err);
     },
 
     /**
      * Self confirm a new user
      */
-    confirmSignUp: async ({ email, confirmationCode }: AuthFormData): Promise<LambdaResponse<{ success: boolean }>> => {
+    confirmSignUp: async ({ email, confirmationCode }: AuthFormData): Promise<LambdaResponse<ConfirmSignUpResponse>> => {
       return await api
-        .post(
+        .post<LambdaResponse<ConfirmSignUpResponse>>(
           `${basePath}/confirmSignUp`,
           buildRequestBody({
-            userName: email,
+            username: email,
             appClientId,
             confirmationCode
           }),
           RequestHeaders
-        );
+        ).catch(err => err);
     },
 
     /**
      * Reset a user's password with an access token
      */
-    forgotPassword: async ({ email }: AuthFormData): Promise<LambdaResponse<CodeDeliveryDetails>> => {
+    forgotPassword: async ({ email }: AuthFormData): Promise<LambdaResponse<ForgotPasswordResponse>> => {
       return await api
-        .post(
+        .post<LambdaResponse<ForgotPasswordResponse>>(
           `${basePath}/forgotPassword`,
           buildRequestBody({
-            userName: email,
+            username: email,
             appClientId
           }),
           RequestHeaders
-        );
+        ).catch(err => err);
     },
 
     /**
-     * Get user by userName
+     * Get user by username
      */
-    getByUserName: async (userName: string): Promise<LambdaResponse<{ user: UserDetails }>> => {
+    getByUserName: async (username: string): Promise<LambdaResponse<GetByUserNameResponse>> => {
       return await api
-        .get(
-          `${basePath}/${userName}`,
+        .get<LambdaResponse<GetByUserNameResponse>>(
+          `${basePath}/${username}`,
           RequestHeaders
-        );
+        ).catch(err => err);
     },
 
     /**
@@ -108,24 +105,24 @@ export function getUsersApi(api: ApiClient) {
         .post<LambdaResponse<LoginResponse>>(
           `${basePath}/login`,
           buildRequestBody({
-            userName: email,
+            username: email,
             password: password,
             appClientId
           }),
           RequestHeaders
-        );
+        ).catch(err => err);
     },
 
     /**
      * Logout a user
      */
-    logout: async (accessToken: string): Promise<LambdaResponse<{ success: boolean }>> => {
+    logout: async (accessToken: string): Promise<LambdaResponse<LogoutResponse>> => {
       return await api
-        .post(
+        .post<LambdaResponse<LogoutResponse>>(
           `${basePath}/logout`,
           buildRequestBody({ accessToken }),
           RequestHeaders
-        );
+        ).catch(err => err);
     },
 
     /**
@@ -135,72 +132,72 @@ export function getUsersApi(api: ApiClient) {
       refreshToken: string,
     ): Promise<LambdaResponse<RefreshTokenResponse>> => {
       return await api
-        .post(
+        .post<LambdaResponse<RefreshTokenResponse>>(
           `${basePath}/refreshToken`,
           buildRequestBody({
             appClientId,
             refreshToken
           }),
           RequestHeaders
-        );
+        ).catch(err => err);
     },
 
     /**
      * Resend the confirmation code used to register a new user
      */
-    resendConfirmation: async (username: string): Promise<LambdaResponse<CodeDeliveryDetails>> => {
+    resendConfirmation: async (username: string): Promise<LambdaResponse<ResendConfirmationResponse>> => {
       return await api
-        .post(
+        .post<LambdaResponse<ResendConfirmationResponse>>(
           `${basePath}/resendConfirmation`,
           buildRequestBody({
             appClientId,
             username
           }),
           RequestHeaders
-        );
+        ).catch(err => err);
     },
 
     /**
      * Self signup a new user
      */
-    signUp: async ({ email, password }: AuthFormData): Promise<LambdaResponse<{ details: SignupResponse }>> => {
+    signUp: async ({ email, password }: AuthFormData): Promise<LambdaResponse<SignUpResponse>> => {
       return await api
-        .post(
+        .post<LambdaResponse<SignUpResponse>>(
           `${basePath}/signUp`,
           buildRequestBody({
-            userName: email,
+            username: email,
             password: password,
             appClientId
           }),
           RequestHeaders
-        );
+        ).catch(err => err);
     },
 
     /**
-     * Update user by userName
+     * Update user by username
      */
-    updateByUserName: async (userName: string, details: UserDetails): Promise<LambdaResponse<{ user: UserDetails }>> => {
+    updateByUserName: async (username: string, details: UserDetails): Promise<LambdaResponse<UpdateByUserNameResponse>> => {
       return await api
-        .post(
-          `${basePath}/${userName}`,
+        .post<LambdaResponse<UpdateByUserNameResponse>>(
+          `${basePath}/${username}`,
           buildRequestBody({ ...details }),
           RequestHeaders
-        );
+        ).catch(err => err);
     },
 
     /**
      * Verify access token
      */
-    verifyToken: async (accessToken: string): Promise<LambdaResponse<{ success: boolean }>> => {
+    verifyToken: async (accessToken: string): Promise<LambdaResponse<VerifyTokenResponse>> => {
       return await api
-        .post(
+        .post<LambdaResponse<VerifyTokenResponse>>(
           `${basePath}/verifyToken`,
           buildRequestBody({
             appClientId,
             accessToken
           }),
           RequestHeaders
-        );
+        ).catch(err => err);
     }
   };
 }

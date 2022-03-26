@@ -1,22 +1,23 @@
 import Router from 'next/router';
 import React, { FormEvent, ReactElement, useState } from 'react';
-
 import { apiClient } from '../api/apiClient';
 import { setLogin } from '../appState/slices/auth';
 import { setUser } from '../appState/slices/user';
 import { useAppDispatch, useAppSelector } from '../appState/store';
 import styles from './login.module.css';
 
+
 export default function Login(): ReactElement {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
   const dispatch = useAppDispatch();
-  
+
   const handleSubmitLogin = async (event: FormEvent) => {
     event.preventDefault();
     setIsLoggingIn(true);
-    const { success, error, payload } = await apiClient.users.login({ email: username, password });
+    const { success, payload } = await apiClient.users.login({ email: username, password });
+    setIsLoggingIn(false);
 
     if (success) {
       const { AccessToken, ExpiresIn, IdToken, RefreshToken, user } = payload;
@@ -30,19 +31,16 @@ export default function Login(): ReactElement {
           RefreshToken
         })
       );
-      
+
       apiClient.axios.setAuthToken(payload.IdToken);
-      
+
       dispatch(
         setUser(user)
       );
-      
-      Router.push('/');
-      
-      setIsLoggingIn(false);
-    }
 
-    if (error) console.error(error);
+      Router.push('/');
+
+    }
   };
 
   const isLoggedIn = useAppSelector(state => state.auth.isLoggedIn);

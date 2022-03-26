@@ -1,10 +1,11 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocument, QueryCommandInput } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-
 import { setDefaultProps } from '../../lib/lambda';
+import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
+import { buildNotFoundError, buildUnknownError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { DynamoUserItem } from '../../models/user';
 
@@ -16,32 +17,46 @@ const {
   usersTableName = ''
 } = process.env;
 
+const logger = LoggerFactory.getLogger();
 const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
 
 const getUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<GetUserByIdResponse> => {
   validateEnvVars(['usersTableName']);
 
-  const partitionKey = 'userName';
+  const partitionKey = 'username';
   const sortKey = 'dataKey';
-  const userName = event.pathParameters?.[partitionKey] as string;
+  const username = event.pathParameters?.[partitionKey] as string;
 
-  const detailsQuery = await docClient.query({
+  logger.debug('partitionKey:', partitionKey);
+  logger.debug('sortKey:', sortKey);
+  logger.debug('username:', username);
+
+  const queryOptions: QueryCommandInput = {
     TableName: usersTableName,
     KeyConditionExpression: `${partitionKey} = :${partitionKey} and ${sortKey} = :${sortKey}`,
     ExpressionAttributeValues: {
-      [`:${partitionKey}`]: userName,
+      [`:${partitionKey}`]: username,
       [`:${sortKey}`]: 'details'
     }
-  });
-
-  if (detailsQuery.Count === 0) throw {
-    success: false,
-    error: `Username '${userName}' not found`,
-    statusCode: 404
   };
+  logger.debug('queryOptions:', queryOptions);
+
+  const detailsQuery = await docClient.query(queryOptions)
+    .catch(err => {
+      logger.debug('docClient query failed with error:', err);
+      throw buildUnknownError(err);
+    });
+
+  logger.debug('detailsQuery:', detailsQuery);
+
+  if (detailsQuery.Count === 0) {
+    logger.debug('detailsQuery returned 0 items. Throwing an error.');
+    throw buildNotFoundError(username);
+  }
 
   const user = detailsQuery.Items?.[0] as DynamoUserItem;
+  logger.debug('user:', user);
 
   return {
     success: true,
@@ -49,11 +64,11 @@ const getUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<GetUserB
   };
 };
 
-export async function handler (event: APIGatewayProxyEvent) {
-  console.log('Event:', JSON.stringify(event));
+export async function handler(event: APIGatewayProxyEvent) {
+  logger.debug('Event:', JSON.stringify(event));
 
   const response = await setDefaultProps(event, getUserByIdHandler);
 
-  console.log('Response:', response);
+  logger.debug('Response:', response);
   return response;
 }

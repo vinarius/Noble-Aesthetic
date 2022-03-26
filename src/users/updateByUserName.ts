@@ -1,10 +1,11 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocument, QueryCommandInput, UpdateCommandInput } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-
 import { setDefaultProps } from '../../lib/lambda';
+import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
+import { buildNotFoundError, buildUnknownError, buildValidationError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { DynamoUserItem, UpdateUserAddress, UpdateUserItem, validateUpdateUser } from '../../models/user';
 
@@ -16,62 +17,87 @@ const {
   usersTableName = ''
 } = process.env;
 
+const logger = LoggerFactory.getLogger();
 const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
 
 const updateUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<UpdateUserResponse> => {
   validateEnvVars(['usersTableName']);
 
-  const partitionKey = 'userName';
+  const partitionKey = 'username';
   const sortKey = 'dataKey';
-  const userName = event.pathParameters?.[partitionKey] as string;
+  const username = event.pathParameters?.[partitionKey] as string;
   const userParams: UpdateUserItem = JSON.parse(event.body ?? '{}');
   const isValid = validateUpdateUser(userParams);
 
-  if (!isValid) throw {
-    success: false,
-    validationErrors: validateUpdateUser.errors ?? [],
-    statusCode: 400
-  };
+  logger.debug('partitionKey:', partitionKey);
+  logger.debug('sortKey:', sortKey);
+  logger.debug('username:', username);
+  logger.debug('userParams:', userParams);
+  logger.debug('isValid:', isValid);
+
+  if (!isValid) {
+    logger.debug('updateUser input was not valid. Throwing an error.');
+    throw buildValidationError(validateUpdateUser.errors);
+  }
 
   const {
     input
   } = userParams;
 
-  const itemQuery = await docClient.query({
+  const queryOptions: QueryCommandInput = {
     TableName: usersTableName,
     KeyConditionExpression: `${partitionKey} = :${partitionKey} and ${sortKey} = :${sortKey}`,
     ExpressionAttributeValues: {
-      [`:${partitionKey}`]: userName,
+      [`:${partitionKey}`]: username,
       [`:${sortKey}`]: 'details'
     }
-  });
-
-  if (itemQuery.Count === 0) throw {
-    success: false,
-    error: `Username '${userName}' not found`,
-    statusCode: 404
   };
+  logger.debug('queryOptions:', queryOptions);
+
+  const itemQuery = await docClient.query(queryOptions)
+    .catch(err => {
+      logger.debug('docClient query operation failed with error:', err);
+      throw buildUnknownError(err);
+    });
+
+  logger.debug('itemQuery:', itemQuery);
+
+  if (itemQuery.Count === 0) {
+    logger.debug('itemQuery returned 0 items. Throwing an error.');
+    throw buildNotFoundError(username);
+  }
 
   let UpdateExpression = 'SET ';
-  const ExpressionAttributeValues: { [key: string]: string|UpdateUserAddress; } = {};
+  const ExpressionAttributeValues: { [key: string]: string | UpdateUserAddress; } = {};
   for (const [key, value] of Object.entries(input)) {
     UpdateExpression += `${key} = :${key}, `;
     ExpressionAttributeValues[`:${key}`] = value;
   }
 
+  logger.debug('UpdateExpression before slice:', UpdateExpression);
   UpdateExpression = UpdateExpression.slice(0, -2);
+  logger.debug('UpdateExpression after slice:', UpdateExpression);
 
-  const dynamoResponse = await docClient.update({
+  const docClientUpdateOptions: UpdateCommandInput = {
     TableName: usersTableName,
-    Key: { 
-      userName,
-      sortKey: 'details'
+    Key: {
+      username,
+      [sortKey]: 'details'
     },
     UpdateExpression,
     ExpressionAttributeValues,
     ReturnValues: 'ALL_NEW'
-  });
+  };
+  logger.debug(docClientUpdateOptions);
+
+  const dynamoResponse = await docClient.update(docClientUpdateOptions)
+    .catch(err => {
+      logger.debug('docClient update operation failed with error:', err);
+      throw buildUnknownError(err);
+    });
+
+  logger.debug('dynamoResponse:', dynamoResponse);
 
   return {
     success: true,
@@ -80,10 +106,10 @@ const updateUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<Updat
 };
 
 export async function handler(event: APIGatewayProxyEvent) {
-  console.log('Event:', JSON.stringify(event));
+  logger.debug('Event:', JSON.stringify(event));
 
   const response = await setDefaultProps(event, updateUserByIdHandler);
 
-  console.log('Response:', response);
+  logger.debug('Response:', response);
   return response;
 }

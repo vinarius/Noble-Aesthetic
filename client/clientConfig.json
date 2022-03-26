@@ -1,1 +1,12 @@
-{"stages":[{"stage":"dev","apiDomainName":"api.dev.nobleaesthetic.com","webAppClientId":"7b4oldb6sumcmhoi98ethm78uv"},{"stage":"prod","apiDomainName":"api.nobleaesthetic.com","webAppClientId":""}]}
+{
+  "dev": {
+    "apiDomainName": "api.dev.nobleaesthetic.com",
+    "webAppClientId": "7b4oldb6sumcmhoi98ethm78uv",
+    "stage": "dev"
+  },
+  "prod": {
+    "apiDomainName": "api.nobleaesthetic.com",
+    "webAppClientId": "",
+    "stage": "prod"
+  }
+}
