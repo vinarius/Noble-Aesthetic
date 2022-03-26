@@ -1,25 +1,36 @@
 import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-
 import { confirmForgotPassword } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
-import { retryOptions, validateEnvVars } from '../../lib/utils';
+import { LoggerFactory } from '../../lib/loggerFactory';
+import { retryOptions } from '../../lib/retryOptions';
+import { validateEnvVars } from '../../lib/validateEnvVars';
+import { buildNotAuthorizedError, buildUnknownError, buildValidationError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { ConfirmForgotPasswordReqBody, validateConfirmForgotPassword } from '../../models/user';
 
+const {
+  webAppClientId = ''
+} = process.env;
+
+const logger = LoggerFactory.getLogger();
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
 const confirmForgotPasswordHandler = async (event: APIGatewayProxyEvent): Promise<HandlerResponse> => {
-  validateEnvVars([]);
+  validateEnvVars(['webAppClientId']);
 
   const userParams: ConfirmForgotPasswordReqBody = JSON.parse(event.body ?? '{}');
-
+  const validClientIds = [webAppClientId];
   const isValid = validateConfirmForgotPassword(userParams);
-  if (!isValid) throw {
-    success: false,
-    validationErrors: validateConfirmForgotPassword.errors ?? [],
-    statusCode: 400
-  };
+
+  logger.debug('userParams:', userParams);
+  logger.debug('validClientIds:', validClientIds);
+  logger.debug('isValid:', isValid);
+
+  if (!isValid) {
+    logger.debug('confirmForgotPassword input was not valid. Throwing an error.');
+    throw buildValidationError(validateConfirmForgotPassword.errors);
+  }
 
   const {
     appClientId,
@@ -28,13 +39,23 @@ const confirmForgotPasswordHandler = async (event: APIGatewayProxyEvent): Promis
     confirmationCode
   } = userParams.input;
 
-  await confirmForgotPassword(
+  if (!validClientIds.includes(appClientId)) {
+    logger.debug('validClientIds does not include appClientId');
+    throw buildNotAuthorizedError(`Appclient ID '${appClientId}' is invalid`);
+  }
+
+  const confirmForgotPasswordResponse = await confirmForgotPassword(
     cognitoClient,
     appClientId,
     username,
     proposedPassword,
     confirmationCode
-  );
+  ).catch(err => {
+    logger.debug('confirmForgotPassword operation failed with error:', err);
+    throw buildUnknownError(err);
+  });
+
+  logger.debug('confirmForgotPasswordResponse:', confirmForgotPasswordResponse);
 
   return {
     success: true
@@ -42,10 +63,10 @@ const confirmForgotPasswordHandler = async (event: APIGatewayProxyEvent): Promis
 };
 
 export async function handler(event: APIGatewayProxyEvent) {
-  console.log('Event:', JSON.stringify(event));
+  logger.debug('Event:', JSON.stringify(event));
 
   const response = await setDefaultProps(event, confirmForgotPasswordHandler);
 
-  console.log('Response:', response);
+  logger.debug('Response:', response);
   return response;
 }

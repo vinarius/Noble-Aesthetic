@@ -9,7 +9,7 @@ const headers = {
   'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,OPTIONS'
 };
 
-export async function setDefaultProps (
+export async function setDefaultProps(
   event: APIGatewayProxyEvent,
   handler: any,
   context?: any,
@@ -31,7 +31,7 @@ export async function setDefaultProps (
     };
 
     if (error instanceof Error) {
-      errorTemplate.error = `${error.name}: ${error.message}`;
+      errorTemplate.error = `${error.name && `${error.name}: `}${error.message}`;
     }
 
     const body = typeof error === 'string' ? error :

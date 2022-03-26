@@ -7,3 +7,7 @@ export interface NobleStackProps extends StackProps {
   branch?: string;
   stack: string;
 }
+
+export interface Generic {
+  [key: string]: string;
+}

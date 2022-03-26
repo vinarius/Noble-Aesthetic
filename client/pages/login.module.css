@@ -1,0 +1,4 @@
+.bg-image-dumbbell {
+  background: url('/dumbbell.jpg');
+  background-size: cover;
+}

@@ -1,40 +1,55 @@
-import { CognitoIdentityProviderClient, InitiateAuthCommandOutput } from '@aws-sdk/client-cognito-identity-provider';
+import { AuthenticationResultType, CognitoIdentityProviderClient, InitiateAuthCommandOutput } from '@aws-sdk/client-cognito-identity-provider';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocument, QueryCommandInput } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-
 import { login } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
-import { retryOptions, validateEnvVars } from '../../lib/utils';
-import { notAuthorizedError } from '../../models/error';
+import { LoggerFactory } from '../../lib/loggerFactory';
+import { retryOptions } from '../../lib/retryOptions';
+import { validateEnvVars } from '../../lib/validateEnvVars';
+import { buildNotAuthorizedError, buildNotFoundError, buildUnknownError, buildValidationError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { DynamoUserItem, LoginReqBody, validateLogin } from '../../models/user';
 
 interface LoginResponse extends HandlerResponse {
-  result: InitiateAuthCommandOutput;
+  payload: {
+    AccessToken?: string;
+    ExpiresIn?: number;
+    IdToken?: string;
+    RefreshToken?: string;
+  };
   user: DynamoUserItem;
 }
 
 const {
-  usersTableName = ''
+  usersTableName = '',
+  webAppClientId = ''
 } = process.env;
 
-const primaryKey = 'email';
+const logger = LoggerFactory.getLogger();
 const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
 const loginHandler = async (event: APIGatewayProxyEvent): Promise<LoginResponse> => {
-  validateEnvVars(['usersTableName']);
-  
-  const params: LoginReqBody = JSON.parse(event.body ?? '{}');
+  validateEnvVars(['usersTableName', 'webAppClientId']);
 
+  const partitionKey = 'username';
+  const sortKey = 'dataKey';
+  const params: LoginReqBody = JSON.parse(event.body ?? '{}');
+  const validClientIds = [webAppClientId];
   const isValid = validateLogin(params);
-  if (!isValid) throw {
-    success: false,
-    validationErrors: validateLogin.errors ?? [],
-    statusCode: 400
-  };
+
+  logger.debug('partitionKey:', partitionKey);
+  logger.debug('sortKey:', sortKey);
+  logger.debug('params:', params);
+  logger.debug('validClientIds:', validClientIds);
+  logger.debug('isValid:', isValid);
+
+  if (!isValid) {
+    logger.debug('login input was not valid. Throwing an error.');
+    throw buildValidationError(validateLogin.errors);
+  }
 
   const {
     appClientId,
@@ -42,39 +57,59 @@ const loginHandler = async (event: APIGatewayProxyEvent): Promise<LoginResponse>
     password
   } = params.input;
 
-  const result: InitiateAuthCommandOutput = await login(cognitoClient, appClientId, username, password).catch(err => {
-    throw err.name?.toLowerCase() === 'notauthorizedexception' ? notAuthorizedError : err;
-  });
+  if (!validClientIds.includes(appClientId)) {
+    logger.debug('validClientIds does not include appClientId. Throwing an error.');
+    throw buildNotAuthorizedError(`Appclient ID '${appClientId}' is Invalid`);
+  }
 
-  const itemQuery = await docClient.query({
+  const result: InitiateAuthCommandOutput = await login(cognitoClient, appClientId, username, password)
+    .catch(err => {
+      logger.debug('login operation failed with error:', err);
+      throw err.name === 'NotAuthorizedException' ? buildNotAuthorizedError('Invalid username or password') : buildUnknownError(err);
+    });
+
+  logger.debug('result:', result);
+
+  const queryOptions: QueryCommandInput = {
     TableName: usersTableName,
-    IndexName: 'email_index',
-    KeyConditionExpression: `${primaryKey} = :${primaryKey}`,
+    KeyConditionExpression: `${partitionKey} = :${partitionKey} and ${sortKey} = :${sortKey}`,
     ExpressionAttributeValues: {
-      [`:${primaryKey}`]: username
+      [`:${partitionKey}`]: username,
+      [`:${sortKey}`]: 'details'
     }
-  });
-
-  if (itemQuery.Count === 0) throw {
-    success: false,
-    error: `Username '${username}' not found in dynamo database`,
-    statusCode: 404
   };
+  logger.debug('queryOptions:', queryOptions);
+
+  const itemQuery = await docClient.query(queryOptions)
+    .catch(err => {
+      logger.debug('docClient query operation failed with error:', err);
+      throw buildUnknownError(err);
+    });
+
+  logger.debug('itemQuery:', itemQuery);
+
+  if (itemQuery.Count === 0) {
+    logger.debug('itemQuery returned 0 items. Throwing an error.');
+    throw buildNotFoundError(username);
+  }
 
   const user = itemQuery.Items?.[0] as DynamoUserItem;
+  logger.debug('user:', user);
+
+  const { AccessToken, ExpiresIn, IdToken, RefreshToken } = result.AuthenticationResult as AuthenticationResultType;
 
   return {
     success: true,
-    result,
+    payload: { AccessToken, ExpiresIn, IdToken, RefreshToken },
     user
   };
 };
 
-export async function handler (event: APIGatewayProxyEvent) {
-  console.log('Event:', JSON.stringify(event));
+export async function handler(event: APIGatewayProxyEvent) {
+  logger.debug('Event:', JSON.stringify(event));
 
   const response = await setDefaultProps(event, loginHandler);
 
-  console.log('Response:', response);
+  logger.debug('Response:', response);
   return response;
 }

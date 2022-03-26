@@ -1,11 +1,12 @@
-/** @type {import('@ts-jest/dist/types').InitialOptionsTsJest} */
-module.exports = {
+import { InitialOptionsTsJest } from 'ts-jest/dist/types';
+
+const config: InitialOptionsTsJest = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   testMatch: [
-    '**/*.test.ts',
-    '**/*.test.tsx',
-    '**/*.test.jsx'
+    '**/*.spec.ts',
+    '**/*.spec.tsx',
+    '**/*.spec.jsx'
   ],
   transform: {
     '^.+\\.tsx?$': 'ts-jest'
@@ -19,3 +20,5 @@ module.exports = {
     }
   }
 };
+
+export default config;

@@ -16,7 +16,7 @@ enum jsonType {
 
 export interface AdminResetUserPasswordReqBody {
   input: {
-    userId: string;
+    username: string;
   }
 }
 
@@ -47,6 +47,8 @@ export interface ConfirmSignUpUserReqBody {
 }
 
 export interface DynamoUserItem {
+  username: string;
+  dataKey: string;
   address: {
     line1: string;
     line2: string;
@@ -55,36 +57,32 @@ export interface DynamoUserItem {
     zip: string;
     country: string;
   };
-  biography: string;
   birthdate: string;
-  email: string;
   firstName: string;
-  gender: 'M'|'F'|'';
+  gender: 'M' | 'F' | '';
   lastName: string;
   phoneNumber: string;
-  subscription: {
-    current: {
-      datePurchased: string;
-      renewalDate: string;
-      tier: 'basic'|'premium';
-    };
-    history: {
-      datePurchased: string;
-      renewalDate: string;
-      tier: 'basic'|'premium';
+}
+
+export interface DynamoUserSessionItem {
+  username: string;
+  dataKey: string;
+  sessionData: {
+    averageSplitTime: string;
+    shotsOnTarget: {
+      timestamp: string;
+      zone: number;
+      index: number;
     }[];
-    isActive: boolean;
-    lastPaid: string;
-    nextBilling: string;
-    paymentFrequency: 'monthly'|'yearly'|'na';
-    trial: {
-      dateEnded: string;
-      dateStarted: string;
-      isActive: boolean;
-      isExpired: boolean;
-    }
-  }
-  userId: string;
+    timeStart: string;
+    timeEnd: string;
+  };
+  latest?: number;
+}
+
+export interface DynamoUserVaultItem {
+  username: string;
+  dataKey: string; //VAULT_{uuid4}
   vault: {
     ammo: {
       brand: string;
@@ -112,7 +110,36 @@ export interface DynamoUserItem {
     name: string;
     s3ImageUrl: string;
     serialNumber: string;
-  }[];
+  };
+}
+
+export interface DynamoUserSubscriptionItem {
+  username: string;
+  isActive: false,
+  lastPaid: '',
+  nextBilling: '',
+  paymentFrequency: 'na',
+  dataKey: string;
+  datePurchased: string; //TODO: update later with luxon
+  latest?: number;
+  renewalDate?: string; //TODO: update later with luxon only for premium user
+  tier: 'basic' | 'premium';
+}
+
+export interface putSessionReqBody {
+  input: {
+    session: {
+      username: string;
+      averageSplitTime: string;
+      shotsOnTarget: {
+        timestamp: string;
+        zone: number;
+        index: number;
+      }[];
+      timeStart: string;
+      timeEnd: string;
+    };
+  }
 }
 
 export interface ForgotPasswordReqBody {
@@ -169,7 +196,6 @@ export interface UpdateUserAddress {
 
 export interface UpdateUserItem {
   input: {
-    email?: string;
     phoneNumber?: string;
     firstName?: string;
     lastName?: string;
@@ -188,11 +214,11 @@ const adminCreateUserSchema: Schema = {
   type: jsonType.OBJECT,
   additionalProperties: false,
   required: [
-    'email',
+    'username',
     'phoneNumber'
   ],
   properties: {
-    email: { type: jsonType.STRING },
+    username: { type: jsonType.STRING },
     phoneNumber: { type: jsonType.STRING },
     firstName: { type: jsonType.STRING },
     lastName: { type: jsonType.STRING },
@@ -227,6 +253,7 @@ const adminResetPasswordSchema: Schema = {
   ],
   properties: {
     input: {
+      type: jsonType.OBJECT,
       required: [
         'userId'
       ],
@@ -316,8 +343,7 @@ const confirmSignUpUserSchema: Schema = {
       required: [
         'appClientId',
         'username',
-        'confirmationCode',
-        'birthdate'
+        'confirmationCode'
       ],
       properties: {
         appClientId: {
@@ -327,9 +353,6 @@ const confirmSignUpUserSchema: Schema = {
           type: jsonType.STRING
         },
         confirmationCode: {
-          type: jsonType.STRING
-        },
-        birthdate: {
           type: jsonType.STRING
         }
       }
@@ -509,7 +532,7 @@ const updateUserSchema: Schema = {
       additionalProperties: false,
       required: [],
       properties: {
-        email: { type: jsonType.STRING },
+        username: { type: jsonType.STRING },
         phoneNumber: { type: jsonType.STRING },
         firstName: { type: jsonType.STRING },
         lastName: { type: jsonType.STRING },
@@ -557,6 +580,72 @@ const verifyTokenSchema: Schema = {
   }
 } as const;
 
+const putSessionSchema: Schema = {
+  type: jsonType.OBJECT,
+  properties: {
+    input: {
+      type: jsonType.OBJECT,
+      additionalProperties: false,
+      required: [
+        'session'
+      ],
+      properties: {
+        session: {
+          type: jsonType.OBJECT,
+          additionalProperties: false,
+          required: [
+            'averageSplitTime',
+            'shotsOnTarget',
+            'timeStart',
+            'timeEnd',
+            'username'
+          ],
+          properties: {
+            averageSplitTime: {
+              type: jsonType.STRING
+            },
+            timeStart: {
+              type: jsonType.STRING
+            },
+            timeEnd: {
+              type: jsonType.STRING
+            },
+            shotsOnTarget: {
+              type: 'array',
+              items: {
+                type: jsonType.OBJECT,
+                additionalProperties: false,
+                required: [
+                  'timestamp', 'zone', 'index'
+                ],
+                properties: {
+                  timestamp: {
+                    type: jsonType.STRING
+                  },
+                  zone: {
+                    type: jsonType.NUMBER,
+                    enum: [7, 8, 9, 10]
+                  },
+                  index: {
+                    type: jsonType.NUMBER
+                  }
+                }
+              }
+            },
+            username: {
+              type: jsonType.STRING
+            }
+          }
+        }
+      }
+    }
+  },
+  additionalProperties: false,
+  required: [
+    'input'
+  ]
+} as const;
+
 export const validateAdminCreateUser = ajv.compile(adminCreateUserSchema);
 export const validateAdminResetPassword = ajv.compile(adminResetPasswordSchema);
 export const validateChangePassword = ajv.compile(changePasswordSchema);
@@ -570,3 +659,4 @@ export const validateResendConfirmationCode = ajv.compile(resendConfirmationCode
 export const validateSignUpUser = ajv.compile(signUpUserSchema);
 export const validateUpdateUser = ajv.compile(updateUserSchema);
 export const validateVerifyToken = ajv.compile(verifyTokenSchema);
+export const validatePutSession = ajv.compile(putSessionSchema);

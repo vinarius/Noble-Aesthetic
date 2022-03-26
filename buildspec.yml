@@ -12,8 +12,10 @@ phases:
   build:
     commands:
       - echo "Build started on `date`"
-      - npm run build
-      - npm run cdk -- deploy --all --require-approval never
+      - npm run clean
+      - npm run cdk -- deploy --all --require-approval never --outputs-file "./cdk-outputs-${STAGE}.json"
+      - npm run build:client
+      - npm run deploy:resources
       - echo "Branch ${BRANCH}"
   post_build:
     commands:

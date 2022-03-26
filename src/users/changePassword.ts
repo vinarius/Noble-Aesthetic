@@ -1,26 +1,27 @@
 import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-
 import { changePassword } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
-import { retryOptions, validateEnvVars } from '../../lib/utils';
-import { notAuthorizedError } from '../../models/error';
+import { LoggerFactory } from '../../lib/loggerFactory';
+import { retryOptions } from '../../lib/retryOptions';
+import { buildNotAuthorizedError, buildUnknownError, buildValidationError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { ChangePasswordReqBody, validateChangePassword } from '../../models/user';
 
+const logger = LoggerFactory.getLogger();
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
 const changePasswordHandler = async (event: APIGatewayProxyEvent): Promise<HandlerResponse> => {
-  validateEnvVars([]);
-
   const userParams: ChangePasswordReqBody = JSON.parse(event.body ?? '{}');
-
   const isValid = validateChangePassword(userParams);
-  if (!isValid) throw {
-    success: false,
-    validationErrors: validateChangePassword.errors ?? [],
-    statusCode: 400
-  };
+
+  logger.debug('userParams:', userParams);
+  logger.debug('isValid:', isValid);
+
+  if (!isValid) {
+    logger.debug('changePassword input was not valid. Throwing an error.');
+    throw buildValidationError(validateChangePassword.errors);
+  }
 
   const {
     accessToken,
@@ -28,9 +29,13 @@ const changePasswordHandler = async (event: APIGatewayProxyEvent): Promise<Handl
     proposedPassword
   } = userParams.input;
 
-  await changePassword(cognitoClient, accessToken, previousPassword, proposedPassword).catch(err => {
-    throw err.name?.toLowerCase() === 'notauthorizedexception' ? notAuthorizedError : err;
-  });
+  const changePasswordResponse = await changePassword(cognitoClient, accessToken, previousPassword, proposedPassword)
+    .catch(error => {
+      logger.debug('changePassword operation failed with error:', error);
+      throw error.name === 'NotAuthorizedException' ? buildNotAuthorizedError(error) : buildUnknownError(error);
+    });
+
+  logger.debug('changePasswordResponse:', changePasswordResponse);
 
   return {
     success: true
@@ -38,10 +43,10 @@ const changePasswordHandler = async (event: APIGatewayProxyEvent): Promise<Handl
 };
 
 export async function handler(event: APIGatewayProxyEvent) {
-  console.log('Event:', JSON.stringify(event));
+  logger.debug('Event:', JSON.stringify(event));
 
   const response = await setDefaultProps(event, changePasswordHandler);
 
-  console.log('Response:', response);
+  logger.debug('Response:', response);
   return response;
 }

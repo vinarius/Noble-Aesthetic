@@ -1,20 +1,24 @@
 import Head from 'next/head';
 import React, { ReactElement } from 'react';
-
 import styles from '../styles/Home.module.css';
+
 
 export default function Home(): ReactElement {
   return (
     <>
       <Head>
-        <title>Noble Aesthetic - Home</title>
-        <meta name='description' content='Home page' />
-        <link rel='icon' href='/favicon.ico' />
+        <title>Noble Aesthetic</title>
+        <meta name='description' content='Welcome page' />
       </Head>
 
       <main className='w-full'>
-        <div
-          className={`${styles['h-30rem']} bg-gray-600 text-white flex items-center`}>
+
+        <div className='flex flex-col justify-center items-center h-screen'>
+          <p className='text-xl md:text-6xl my-3'>Welcome to Noble Aesthetic</p>
+          <p className='text-xl md:text-6xl my-3'>Coming Soon!</p>
+        </div>
+
+        <div className='h-96 bg-gray-600 text-white flex items-center'>
           <div className='grid grid-flow-col grid-cols-2 grid-rows-2 ml-10'>
             <p className='text-4xl'>
               Welcome to Noble Aesthetic
@@ -89,7 +93,6 @@ export default function Home(): ReactElement {
             </div>
           </div>
         </div>
-
       </main>
     </>
   );

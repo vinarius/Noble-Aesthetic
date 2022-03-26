@@ -1,10 +1,11 @@
 import { Aws, Stack } from 'aws-cdk-lib';
 import { EventAction, FilterGroup, LinuxBuildImage, Project, Source } from 'aws-cdk-lib/aws-codebuild';
 import { Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
-
 import { repo } from '../config';
 import { NobleStackProps } from '../models/cloudResources';
+
 
 export class CICDStack extends Stack {
   constructor(scope: Construct, id: string, props: NobleStackProps) {
@@ -13,8 +14,12 @@ export class CICDStack extends Stack {
     const {
       project,
       stage,
-      branch
+      branch,
+      stack
     } = props;
+
+    const hostBucketArn = StringParameter.fromStringParameterName(this, `${project}-${stack}-hostBucketArnParam-${stage}`, `/${project}/webhost/hostbucketArn/${stage}`).stringValue;
+    const siteDistributionId = StringParameter.fromStringParameterName(this, `${project}-${stack}-siteDistributionIdParam-${stage}`, `/${project}/webhost/siteDistributionId/${stage}`).stringValue;
 
     new Project(this, `${project}-codeBuildProject-${stage}`, {
       projectName: `${project}-codeBuildProject-${stage}`,
@@ -27,6 +32,9 @@ export class CICDStack extends Stack {
         },
         IS_CODEBUILD: {
           value: true
+        },
+        STAGE: {
+          value: stage
         }
       },
       source: Source.gitHub({
@@ -50,6 +58,21 @@ export class CICDStack extends Stack {
                 actions: ['sts:assumeRole'],
                 resources: [
                   `arn:${Aws.PARTITION}:iam::${Aws.ACCOUNT_ID}:role/cdk-hnb659fds-*`
+                ]
+              }),
+              new PolicyStatement({
+                effect: Effect.ALLOW,
+                actions: ['s3:*'],
+                resources: [
+                  hostBucketArn,
+                  `${hostBucketArn}/*`
+                ]
+              }),
+              new PolicyStatement({
+                effect: Effect.ALLOW,
+                actions: ['cloudfront:CreateInvalidation'],
+                resources: [
+                  `arn:${Aws.PARTITION}:cloudfront::${Aws.ACCOUNT_ID}:distribution/${siteDistributionId}`
                 ]
               })
             ]

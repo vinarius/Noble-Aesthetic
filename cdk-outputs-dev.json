@@ -1,0 +1,14 @@
+{
+  "noble-WebHostStack-dev": {
+    "noblehostBucketNameOutputdev": "noble-webhoststack-dev-noblehostbucketdev689ff43d-1npcl9fkwmm3g",
+    "noblesiteDistributionIdOutputdev": "EFBAXETLZFH19"
+  },
+  "noble-apiStack-dev": {
+    "nobleapiIdOutputdev": "fk9jcs4wm5",
+    "nobleapiUrlOutputdev": "https://fk9jcs4wm5.execute-api.us-east-1.amazonaws.com/dev/",
+    "nobleapidevEndpointE1F60701": "https://fk9jcs4wm5.execute-api.us-east-1.amazonaws.com/dev/"
+  },
+  "noble-usersStack-dev": {
+    "noblewebAppClientIdOutputdev": "41d60e217act5tg82hj31qipj1"
+  }
+}

@@ -1,41 +1,44 @@
-export const notAuthorizedError = {
-  success: false,
-  validationErrors: [
-    {
-      'instancePath': '',
-      'schemaPath': '',
-      'keyword': 'NotAuthorized',
-      'params': null,
-      'message': 'NotAuthorizedException'
-    }
-  ],
-  statusCode: 400
-};
+import { ErrorObject } from 'ajv';
 
-export const invalidTokenError = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const buildValidationError = (validationErrors: ErrorObject<string, Record<string, any>, unknown>[] | null | undefined = []) => ({
   success: false,
-  validationErrors: [
-    {
-      'instancePath': '',
-      'schemaPath': '',
-      'keyword': 'NotAuthorized',
-      'params': null,
-      'message': 'NotAuthorizedException: Invalid Access Token'
-    }
-  ],
+  reason: 'ValidationError',
+  validationErrors,
   statusCode: 400
-};
+});
 
-export const codeMismatchError = {
+export const buildBadRequestError = (error: string) => ({
   success: false,
-  validationErrors: [
-    {
-      'instancePath': '',
-      'schemaPath': '',
-      'keyword': 'CodeMismatch',
-      'params': {},
-      'message': 'CodeMismatchException'
-    }
-  ],
+  reason: 'BadRequest',
+  error,
   statusCode: 400
-};
+});
+
+export const buildNotAuthorizedError = (error: Error | string) => ({
+  success: false,
+  reason: 'NotAuthorized',
+  error: error instanceof Error ? `${error.name && `${error.name}: `}${error.message}` : error,
+  statusCode: 401
+});
+
+export const buildNotFoundError = (resource: string) => ({
+  success: false,
+  reason: 'NotFound',
+  error: `${resource} not found`,
+  statusCode: 404
+});
+
+export const buildResourceExistsError = (resource: string) => ({
+  success: false,
+  reason: 'ResourceExists',
+  error: `A resource already exists with the given input: ${resource}`,
+  statusCode: 409
+});
+
+export const buildUnknownError = (error: Error | string) => ({
+  success: false,
+  reason: 'Unknown',
+  error: error instanceof Error ? `${error.name && `${error.name}: `}${error.message}` : error,
+  statusCode: 500
+});

@@ -1,8 +1,10 @@
 import { CognitoJwtVerifier } from 'aws-jwt-verify';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-
+import { DateTime } from 'luxon';
 import { setDefaultProps } from '../../lib/lambda';
-import { validateEnvVars } from '../../lib/utils';
+import { LoggerFactory } from '../../lib/loggerFactory';
+import { validateEnvVars } from '../../lib/validateEnvVars';
+import { buildNotAuthorizedError, buildValidationError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { validateVerifyToken, VerifyTokenReqBody } from '../../models/user';
 
@@ -10,17 +12,21 @@ const {
   userPoolId = ''
 } = process.env;
 
-const verifyTokenHandler = async (event: APIGatewayProxyEvent): Promise<HandlerResponse> => {  
+const logger = LoggerFactory.getLogger();
+
+const verifyTokenHandler = async (event: APIGatewayProxyEvent): Promise<HandlerResponse> => {
   validateEnvVars(['userPoolId']);
 
   const params: VerifyTokenReqBody = JSON.parse(event.body ?? '{}');
-
   const isValid = validateVerifyToken(params);
-  if (!isValid) throw {
-    success: false,
-    validationErrors: validateVerifyToken.errors ?? [],
-    statusCode: 400
-  };
+
+  logger.debug('params:', params);
+  logger.debug('isValid:', isValid);
+
+  if (!isValid) {
+    logger.debug('verifyToken input was not valid. Throwing an error.');
+    throw buildValidationError(validateVerifyToken.errors);
+  }
 
   const {
     accessToken,
@@ -33,25 +39,31 @@ const verifyTokenHandler = async (event: APIGatewayProxyEvent): Promise<HandlerR
     tokenUse: 'access'
   });
 
-  await verifier.verify(accessToken).catch(error => {
-    throw {
-      success: false,
-      statusCode: 400,
-      message: 'invalid token',
-      error
-    };
-  });
+  logger.debug('verifier:', verifier);
+
+  const { exp } = await verifier.verify(accessToken)
+    .catch(error => {
+      logger.debug('verify error:', error);
+      throw buildNotAuthorizedError('Invalid access token');
+    });
+
+  logger.debug('exp:', exp);
+
+  const isExpired = DateTime.now() > DateTime.fromSeconds(exp);
+
+  logger.debug('isExpired:', isExpired);
 
   return {
-    success: true
+    success: !isExpired,
+    ...isExpired && { error: 'Token has expired. Refresh required.' }
   };
 };
 
-export async function handler (event: APIGatewayProxyEvent) {
-  console.log('Event:', JSON.stringify(event));
+export async function handler(event: APIGatewayProxyEvent) {
+  logger.debug('Event:', JSON.stringify(event));
 
   const response = await setDefaultProps(event, verifyTokenHandler);
 
-  console.log('Response:', response);
+  logger.debug('Response:', response);
   return response;
 }
