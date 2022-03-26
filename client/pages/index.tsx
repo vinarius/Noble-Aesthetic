@@ -1,8 +1,5 @@
 import Head from 'next/head';
 import React, { ReactElement } from 'react';
-import { config } from '../getConfig';
-
-const { apiDomainName, stage, webAppClientId } = config;
 
 export default function Home(): ReactElement {
   return (

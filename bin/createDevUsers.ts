@@ -36,7 +36,7 @@ export async function createDevUsers(): Promise<void> {
     ].map(username => {
       return {
         ...newUser,
-        username: username
+        username
       };
     });
 

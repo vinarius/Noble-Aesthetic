@@ -18,6 +18,24 @@ const {
   webAppClientId = ''
 } = process.env;
 
+export const newUser: DynamoUserItem = {
+  username: '',
+  dataKey: 'details',
+  address: {
+    line1: '',
+    line2: '',
+    city: '',
+    state: '',
+    zip: '',
+    country: ''
+  },
+  birthdate: '',
+  firstName: '',
+  gender: '',
+  lastName: '',
+  phoneNumber: ''
+};
+
 const logger = LoggerFactory.getLogger();
 const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
@@ -64,25 +82,7 @@ const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<Handle
   const timestamp = DateTime.now().toUTC().toFormat('MM/dd/yyyy\'T\'HH:mm:ss.SSS\'Z\'');
   logger.debug('timestamp:', timestamp);
 
-  const newUser: DynamoUserItem = {
-    username,
-    dataKey: 'details',
-    address: {
-      line1: '',
-      line2: '',
-      city: '',
-      state: '',
-      zip: '',
-      country: ''
-    },
-    birthdate: '',
-    firstName: '',
-    gender: '',
-    lastName: '',
-    phoneNumber: ''
-  };
-
-  logger.debug('newUser:', newUser);
+  newUser.username = username;
 
   const putOptions: PutCommandInput = {
     TableName: usersTableName,

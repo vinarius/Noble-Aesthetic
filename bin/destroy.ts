@@ -5,20 +5,20 @@ import {
   DescribeLogGroupsCommandOutput,
   LogGroup
 } from '@aws-sdk/client-cloudwatch-logs';
-
 import { getAppConfig } from '../lib/getAppConfig';
 import { retryOptions } from '../lib/retryOptions';
 import { spawn } from '../lib/spawn';
 import { validateAwsProfile } from '../lib/validateAwsProfile';
+
 
 async function destroy(): Promise<void> {
   const { IS_JEST } = process.env;
   const cloudWatchLogsClient = new CloudWatchLogsClient({ ...retryOptions });
 
   try {
-    const { alias, branch, profile, stage, env, isStagingEnv } = await getAppConfig();
+    const { alias, branch, profile, stage, env } = await getAppConfig();
 
-    if (isStagingEnv)
+    if (stage === 'prod')
       throw new Error(`Unable to destroy stacks on branch ${branch} for environment ${stage}. Please check your git branch.`);
 
     await validateAwsProfile(profile);

@@ -29,7 +29,7 @@ async function buildInfrastructure(): Promise<void> {
 
     const app = new App();
 
-    const terminationProtection = isStagingEnv;
+    const terminationProtection = stage === 'prod';
 
     const webhostStack = new WebHostStack(app, `${project}-WebHostStack-${stage}`, {
       stackName: `${project}-WebHostStack-${stage}`,

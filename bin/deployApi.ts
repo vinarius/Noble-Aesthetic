@@ -1,7 +1,6 @@
 import { readFileSync } from 'fs';
-import { resolve } from 'path';
-
 import { getAppConfig } from '../lib/getAppConfig';
+import { resolveFromRoot } from '../lib/resolveFromRoot';
 import { spawn } from '../lib/spawn';
 import { validateAwsProfile } from '../lib/validateAwsProfile';
 
@@ -9,14 +8,15 @@ export async function deployApi(): Promise<void> {
   const { IS_CODEBUILD, IS_JEST } = process.env;
 
   try {
-    const { profile, stage, env, project } = await getAppConfig();
+    const { profile, stage, env, project, isStagingEnv } = await getAppConfig();
     const includeProfile = IS_CODEBUILD ? '' : `--profile ${profile}`;
-    
+
     if (!IS_CODEBUILD) await validateAwsProfile(profile);
 
     console.log('\n>>> Deploying api gateway api.\n');
 
-    const cdkOutputsRaw = JSON.parse(readFileSync(resolve(__dirname, '..', 'dist', 'cdk-outputs.json')).toString());
+    const cdkOutputsPath = isStagingEnv ? resolveFromRoot(`cdk-outputs-${stage}.json`) : resolveFromRoot('dist', `cdk-outputs-${stage}.json`)
+    const cdkOutputsRaw = JSON.parse(readFileSync(cdkOutputsPath).toString());
     const restApiId = cdkOutputsRaw[`${project}-apiStack-${stage}`][`${project}apiIdOutput${stage.replace(/\W/g, '')}`];
 
     spawn(`aws apigateway create-deployment --rest-api-id ${restApiId} --stage-name ${stage} ${includeProfile} --region ${env.region}`);
