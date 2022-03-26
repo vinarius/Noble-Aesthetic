@@ -1,0 +1,14 @@
+{
+  "stages": [
+    {
+      "stage": "dev",
+      "apiDomainName": "https: //api.dev.nobleaesthetic.com/",
+      "webAppClientId": "7b4oldb6sumcmhoi98ethm78uv"
+    },
+    {
+      "stage": "prod",
+      "apiDomainName": "https: //api.nobleaesthetic.com/",
+      "webAppClientId": ""
+    }
+  ]
+}

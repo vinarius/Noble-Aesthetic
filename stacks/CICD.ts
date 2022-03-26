@@ -3,9 +3,9 @@ import { EventAction, FilterGroup, LinuxBuildImage, Project, Source } from 'aws-
 import { Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
-
 import { repo } from '../config';
 import { NobleStackProps } from '../models/cloudResources';
+
 
 export class CICDStack extends Stack {
   constructor(scope: Construct, id: string, props: NobleStackProps) {
@@ -32,6 +32,9 @@ export class CICDStack extends Stack {
         },
         IS_CODEBUILD: {
           value: true
+        },
+        STAGE: {
+          value: stage
         }
       },
       source: Source.gitHub({

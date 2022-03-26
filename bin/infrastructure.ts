@@ -1,13 +1,13 @@
-import 'source-map-support/register';
-
 import { App } from 'aws-cdk-lib';
-
+import 'source-map-support/register';
 import { getAppConfig } from '../lib/getAppConfig';
-import { CICDStack } from '../stacks/CICD';
-import { WebHostStack } from '../stacks/webHost';
-import { ApiStack } from '../stacks/api';
-import { UsersStack } from '../stacks/users';
 import { validateAwsProfile } from '../lib/validateAwsProfile';
+import { ApiStack } from '../stacks/api';
+import { CICDStack } from '../stacks/CICD';
+import { UsersStack } from '../stacks/users';
+import { WebHostStack } from '../stacks/webHost';
+
+
 
 async function buildInfrastructure(): Promise<void> {
   const { IS_JEST, IS_CODEBUILD } = process.env;
@@ -43,7 +43,7 @@ async function buildInfrastructure(): Promise<void> {
       certificateId
     });
 
-    if (isStagingEnv) {
+    if (stage === 'prod') {
       const cicdStack = new CICDStack(app, `${project}-CICDStack-${stage}`, {
         stackName: `${project}-CICDStack-${stage}`,
         stack: 'cicd',
