@@ -74,7 +74,7 @@ export async function createDevUsers(): Promise<void> {
           Username: username,
           Permanent: true,
           UserPoolId: Id,
-          Password: 'PennYpo0!'
+          Password: username === 'vindevccm@gmail.com' ? 'Fo0B@rBaz' : 'PennYpo0!'
         })
       );
 

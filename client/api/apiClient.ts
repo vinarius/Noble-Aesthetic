@@ -19,7 +19,7 @@ export class ApiClient {
 
     this.client.interceptors.request.use(
       (req) => {
-        if (!isProd) console.log(`Sending ${req.method} request to ${req.baseURL}${req.url}:\n`, { data: JSON.parse(req.data) });
+        if (!isProd) console.log(`Sending ${req.method} request to ${req.baseURL}${req.url}:\n`, JSON.parse(req.data));
         return req
       },
       (error) => {

@@ -33,6 +33,12 @@ async function setEnvVars(): Promise<void> {
       webAppClientId
     };
 
+    console.log('cdkOutputsRaw:', cdkOutputsRaw);
+    console.log('webAppClientId:', webAppClientId);
+    console.log('apiUrl:', apiUrl);
+    console.log('envVars:', envVars);
+    console.log('stage:', stage);
+
     const clientConfigPath = resolveFromRoot('client', 'clientConfig.json');
 
     if (!existsSync(clientConfigPath)) {
@@ -54,9 +60,11 @@ async function setEnvVars(): Promise<void> {
 
     const clientConfigOriginal = JSON.parse(readFileSync(clientConfigPath).toString()) as ClientConfig;
     const clientConfigRefreshed: ClientConfig = {
-      [stage]: envVars,
-      ...clientConfigOriginal
+      ...clientConfigOriginal,
+      [stage]: envVars
     };
+
+    console.log('clientConfigRefreshed:', clientConfigRefreshed);
 
     writeFileSync(clientConfigPath, JSON.stringify(clientConfigRefreshed));
 

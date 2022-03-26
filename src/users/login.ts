@@ -1,4 +1,4 @@
-import { CognitoIdentityProviderClient, InitiateAuthCommandOutput } from '@aws-sdk/client-cognito-identity-provider';
+import { AuthenticationResultType, CognitoIdentityProviderClient, InitiateAuthCommandOutput } from '@aws-sdk/client-cognito-identity-provider';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument, QueryCommandInput } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
@@ -12,7 +12,12 @@ import { HandlerResponse } from '../../models/response';
 import { DynamoUserItem, LoginReqBody, validateLogin } from '../../models/user';
 
 interface LoginResponse extends HandlerResponse {
-  result: InitiateAuthCommandOutput;
+  payload: {
+    AccessToken?: string;
+    ExpiresIn?: number;
+    IdToken?: string;
+    RefreshToken?: string;
+  };
   user: DynamoUserItem;
 }
 
@@ -91,9 +96,11 @@ const loginHandler = async (event: APIGatewayProxyEvent): Promise<LoginResponse>
   const user = itemQuery.Items?.[0] as DynamoUserItem;
   logger.debug('user:', user);
 
+  const { AccessToken, ExpiresIn, IdToken, RefreshToken } = result.AuthenticationResult as AuthenticationResultType;
+
   return {
     success: true,
-    result,
+    payload: { AccessToken, ExpiresIn, IdToken, RefreshToken },
     user
   };
 };
