@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import React, { ReactElement } from 'react';
-
 import styles from '../styles/About.module.css';
+
 
 export default function Home(): ReactElement {
   return (
@@ -14,7 +14,7 @@ export default function Home(): ReactElement {
 
       <main className='w-full'>
         <div
-          className={`h-32 bg-gray-600 text-white flex items-center`}>
+          className={'h-32 bg-gray-600 text-white flex items-center'}>
           <div className='grid grid-flow-col grid-cols-2 grid-rows-2 ml-10'>
             <p className='text-4xl'>
               Who We Are

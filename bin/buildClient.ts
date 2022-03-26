@@ -18,26 +18,22 @@ async function setEnvVars(): Promise<void> {
     const { stage, apiDomainName, project, isStagingEnv } = await getAppConfig();
     const envFilePath = resolveFromRoot('client', '.env');
 
+    const targetStage = stage === 'prod' ? stage : 'dev';
+
     if (existsSync(envFilePath))
       rmSync(envFilePath);
 
-    writeFileSync(envFilePath, `NEXT_PUBLIC_STAGE=${stage}`);
+    writeFileSync(envFilePath, `NEXT_PUBLIC_STAGE=${targetStage}`);
 
-    const cdkOutputsRaw = JSON.parse(readFileSync(resolveFromRoot(`cdk-outputs-${stage}.json`)).toString());
-    const webAppClientId = cdkOutputsRaw[`${project}-usersStack-${stage}`][`${project}webAppClientIdOutput${stage.replace(/\W/g, '')}`];
-    const apiUrl = cdkOutputsRaw[`${project}-apiStack-${stage}`][`${project}apiUrlOutput${stage.replace(/\W/g, '')}`];
+    const cdkOutputsRaw = JSON.parse(readFileSync(resolveFromRoot(`cdk-outputs-${targetStage}.json`)).toString());
+    const webAppClientId = cdkOutputsRaw[`${project}-usersStack-${targetStage}`][`${project}webAppClientIdOutput${targetStage.replace(/\W/g, '')}`];
+    const apiUrl = cdkOutputsRaw[`${project}-apiStack-${targetStage}`][`${project}apiUrlOutput${targetStage.replace(/\W/g, '')}`];
 
     const envVars: ClientStageDefinition = {
-      stage,
+      stage: targetStage,
       apiDomainName: isStagingEnv ? apiDomainName : apiUrl,
       webAppClientId
     };
-
-    console.log('cdkOutputsRaw:', cdkOutputsRaw);
-    console.log('webAppClientId:', webAppClientId);
-    console.log('apiUrl:', apiUrl);
-    console.log('envVars:', envVars);
-    console.log('stage:', stage);
 
     const clientConfigPath = resolveFromRoot('client', 'clientConfig.json');
 
@@ -46,12 +42,12 @@ async function setEnvVars(): Promise<void> {
         dev: {
           apiDomainName: '',
           webAppClientId: '',
-          stage
+          stage: targetStage
         },
         prod: {
           apiDomainName: '',
           webAppClientId: '',
-          stage
+          stage: targetStage
         }
       };
 
@@ -61,10 +57,8 @@ async function setEnvVars(): Promise<void> {
     const clientConfigOriginal = JSON.parse(readFileSync(clientConfigPath).toString()) as ClientConfig;
     const clientConfigRefreshed: ClientConfig = {
       ...clientConfigOriginal,
-      [stage]: envVars
+      [targetStage]: envVars
     };
-
-    console.log('clientConfigRefreshed:', clientConfigRefreshed);
 
     writeFileSync(clientConfigPath, JSON.stringify(clientConfigRefreshed));
 

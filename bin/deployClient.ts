@@ -17,7 +17,9 @@ async function syncHostBucket() {
   const { IS_CODEBUILD } = process.env;
 
   try {
-    const { profile, project, stage, env, isStagingEnv } = await getAppConfig();
+    const { profile, project, stage, env } = await getAppConfig();
+
+    const targetStage = stage === 'prod' ? stage : 'dev';
 
     if (!IS_CODEBUILD) {
       await validateAwsProfile(profile);
@@ -25,10 +27,9 @@ async function syncHostBucket() {
       process.env.AWS_REGION = env.region;
     }
 
-    const cdkOutputsPath = isStagingEnv ? resolveFromRoot(`cdk-outputs-${stage}.json`) : resolveFromRoot('dist', `cdk-outputs-${stage}.json`)
-    const cdkOutputsRaw = JSON.parse(readFileSync(cdkOutputsPath).toString());
-    const hostBucketName = cdkOutputsRaw[`${project}-WebHostStack-${stage}`][`${project}hostBucketNameOutput${stage.replace(/\W/g, '')}`];
-    const distributionId = cdkOutputsRaw[`${project}-WebHostStack-${stage}`][`${project}siteDistributionIdOutput${stage.replace(/\W/g, '')}`];
+    const cdkOutputsRaw = JSON.parse(readFileSync(resolveFromRoot(`cdk-outputs-${targetStage}.json`)).toString());
+    const hostBucketName = cdkOutputsRaw[`${project}-WebHostStack-${targetStage}`][`${project}hostBucketNameOutput${targetStage.replace(/\W/g, '')}`];
+    const distributionId = cdkOutputsRaw[`${project}-WebHostStack-${targetStage}`][`${project}siteDistributionIdOutput${targetStage.replace(/\W/g, '')}`];
 
     await sync(resolveFromRoot('dist', 'client'), `s3://${hostBucketName}`, {
       del: true,

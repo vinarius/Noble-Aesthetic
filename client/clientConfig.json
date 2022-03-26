@@ -1,1 +1,1 @@
-{"dev":{"stage":"dev","apiDomainName":"api.dev.nobleaesthetic.com","webAppClientId":"41d60e217act5tg82hj31qipj1"},"prod":{"apiDomainName":"api.nobleaesthetic.com","webAppClientId":"","stage":"prod"}}
+{"dev":{"stage":"dev","apiDomainName":"https://fk9jcs4wm5.execute-api.us-east-1.amazonaws.com/dev/","webAppClientId":"41d60e217act5tg82hj31qipj1"},"prod":{"apiDomainName":"api.nobleaesthetic.com","webAppClientId":"","stage":"prod"}}

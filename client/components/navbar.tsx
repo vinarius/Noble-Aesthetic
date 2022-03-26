@@ -5,7 +5,6 @@ import { apiClient } from '../api/apiClient';
 import { setLogin } from '../appState/slices/auth';
 import { useAppDispatch, useAppSelector } from '../appState/store';
 
-
 export default function Navbar(): ReactElement {
   const username = useAppSelector(state => state.user.username);
   const accessToken = useAppSelector(state => state.auth.accessToken);
