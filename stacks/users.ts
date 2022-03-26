@@ -16,10 +16,10 @@ import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { resolve } from 'path';
-
 import { NobleStackProps } from '../models/cloudResources';
 import { HttpMethod, UserGroup } from '../models/enums';
 import { LambdaDefinition } from '../models/lambda';
+
 
 export class UsersStack extends Stack {
   constructor(scope: Construct, id: string, props: NobleStackProps) {
@@ -108,7 +108,7 @@ export class UsersStack extends Stack {
       parameterName: `/${project}/${stack}/usersTableArn/${stage}`,
       stringValue: usersTable.tableArn
     });
-    
+
     /**
      * API Gateway Section
      */
@@ -123,7 +123,7 @@ export class UsersStack extends Stack {
     const apiSpecificRoute = restApi.root.addResource('users'); // api requests map to {domain}/users/...
 
     const cognitoAuthorizer = new CognitoUserPoolsAuthorizer(this, `${project}-${stack}-authorizer-${stage}`, {
-      cognitoUserPools: [ userPool ],
+      cognitoUserPools: [userPool],
       authorizerName: `${project}-${stack}-authorizer-${stage}`,
       resultsCacheTtl: stage === 'prod' ? Duration.minutes(5) : Duration.minutes(0)
     });
@@ -479,23 +479,24 @@ export class UsersStack extends Stack {
       usersTable.grantFullAccess(nodeLambda);
 
       if (api) {
-        const { httpMethod, customApiPath, auth } = api;
+        const { httpMethod, customApiPath, auth, isBaseResource } = api;
         const childResourceName = customApiPath ?? name;
 
-        const apiRoute = apiSpecificRoute.getResource(childResourceName) ??
-        apiSpecificRoute.addResource(childResourceName, {
-          defaultCorsPreflightOptions: {
-            allowOrigins: Cors.ALL_ORIGINS,
-            allowHeaders: ['*'],
-            allowCredentials: true,
-            allowMethods: Cors.ALL_METHODS          
-          }
-        });
+        const apiRoute = isBaseResource ? apiSpecificRoute :
+          apiSpecificRoute.getResource(childResourceName) ??
+          apiSpecificRoute.addResource(childResourceName, {
+            defaultCorsPreflightOptions: {
+              allowOrigins: Cors.ALL_ORIGINS,
+              allowHeaders: ['*'],
+              allowCredentials: true,
+              allowMethods: Cors.ALL_METHODS
+            }
+          });
 
         const apiMethod = apiRoute.addMethod(
           httpMethod as HttpMethod,
           new LambdaIntegration(nodeLambda),
-          { 
+          {
             ...auth && {
               ...authMethodOptions,
               authorizationScopes: auth.authorizationScopes

@@ -2,9 +2,8 @@ import { CloudFrontClient, CreateInvalidationCommand } from '@aws-sdk/client-clo
 import { S3Client } from '@aws-sdk/client-s3';
 import { readFileSync } from 'fs';
 import { lookup } from 'mime-types';
-
-import { fromRoot } from '../lib/fromRoot';
 import { getAppConfig } from '../lib/getAppConfig';
+import { resolveFromRoot } from '../lib/resolveFromRoot';
 import { retryOptions } from '../lib/retryOptions';
 import { validateAwsProfile } from '../lib/validateAwsProfile';
 
@@ -28,11 +27,11 @@ async function syncHostBucket() {
       process.env.AWS_REGION = env.region;
     }
 
-    const cdkOutputsRaw = JSON.parse(readFileSync(fromRoot(['dist', 'cdk-outputs.json'])).toString());
+    const cdkOutputsRaw = JSON.parse(readFileSync(resolveFromRoot('dist', 'cdk-outputs.json')).toString());
     const hostBucketName = cdkOutputsRaw[`${project}-WebHostStack-${stage}`][`${project}hostBucketNameOutput${stage.replace(/\W/g, '')}`];
     const distributionId = cdkOutputsRaw[`${project}-WebHostStack-${stage}`][`${project}siteDistributionIdOutput${stage.replace(/\W/g, '')}`];
 
-    await sync(fromRoot(['dist', 'client']), `s3://${hostBucketName}`, {
+    await sync(resolveFromRoot('dist', 'client'), `s3://${hostBucketName}`, {
       del: true,
       commandInput: {
         ContentType: (syncCommandInput: { Key: string; }) => (

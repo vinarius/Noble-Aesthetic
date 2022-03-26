@@ -7,7 +7,7 @@ export class ApiClient {
 
   constructor(token?: string) {
     this.client = axios.create({
-      baseURL: `https://${process.env.NEXT_PUBLIC_APIDOMAINNAME}/`,
+      baseURL: process.env.NEXT_PUBLIC_APIDOMAINNAME,
       headers: {
         Accept: 'application/json',
         ...token && { Authorization: token }

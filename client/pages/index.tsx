@@ -2,6 +2,9 @@ import Head from 'next/head';
 import React, { ReactElement } from 'react';
 
 export default function Home(): ReactElement {
+  console.log('NEXT_PUBLIC_APIDOMAINNAME:', process.env.NEXT_PUBLIC_APIDOMAINNAME);
+  console.log('NEXT_PUBLIC_STAGE:', process.env.NEXT_PUBLIC_STAGE);
+  console.log('NEXT_PUBLIC_WEBAPPCLIENTID:', process.env.NEXT_PUBLIC_WEBAPPCLIENTID);
 
   return (
     <>
