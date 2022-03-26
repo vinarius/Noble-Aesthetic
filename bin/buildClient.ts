@@ -1,11 +1,16 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { getAppConfig } from '../lib/getAppConfig';
 import { resolveFromRoot } from '../lib/resolveFromRoot';
+import { spawn } from '../lib/spawn';
 
 export interface ClientStageDefinition {
   stage: string;
   apiDomainName: string;
   webAppClientId: string;
+}
+
+export interface ClientConfig {
+  stages: ClientStageDefinition[];
 }
 
 async function setEnvVars(): Promise<void> {
@@ -23,20 +28,40 @@ async function setEnvVars(): Promise<void> {
     const apiUrl = cdkOutputsRaw[`${project}-apiStack-${stage}`][`${project}apiUrlOutput${stage.replace(/\W/g, '')}`];
 
     const envVars = {
-      apiDomainName: isStagingEnv ? apiDomainName : apiUrl,
       stage,
+      apiDomainName: isStagingEnv ? apiDomainName : apiUrl,
       webAppClientId
     };
 
-    const clientConfigOriginal = JSON.parse(readFileSync(resolveFromRoot('client', 'clientConfig.json')).toString()) as { stages: ClientStageDefinition[] };
+    const clientConfigPath = resolveFromRoot('client', 'clientConfig.json');
 
-    const clientConfigRefreshed = {
-      stages: clientConfigOriginal.map(stage => {
+    if (!existsSync(clientConfigPath)) {
+      const defaultClientConfig: ClientConfig = {
+        stages: [
+          {
+            stage: 'dev',
+            apiDomainName: '',
+            webAppClientId: ''
+          },
+          {
+            stage: 'prod',
+            apiDomainName: '',
+            webAppClientId: ''
+          }
+        ]
+      };
 
-      })
+      writeFileSync(clientConfigPath, JSON.stringify(defaultClientConfig));
+    }
+
+    const clientConfigOriginal = JSON.parse(readFileSync(clientConfigPath).toString()) as ClientConfig;
+    const clientConfigRefreshed: ClientConfig = {
+      stages: clientConfigOriginal.stages.map(stageDefinition => stageDefinition.stage === stage ? envVars : stageDefinition)
     };
 
-    // spawn('cd client && npm run build');
+    writeFileSync(clientConfigPath, JSON.stringify(clientConfigRefreshed));
+
+    spawn('cd client && npm run build');
     console.log('\n>>> Client build complete.\n');
   } catch (error) {
     const { name, message } = error as Error;

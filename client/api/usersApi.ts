@@ -1,8 +1,7 @@
+import { config } from '../getConfig';
 import {
-  LambdaResponse,
-  CodeDeliveryDetails,
-  RefreshTokenResponse,
-  SignupResponse,
+  CodeDeliveryDetails, LambdaResponse, RefreshTokenResponse,
+  SignupResponse
 } from '../models/api/response';
 import { LoginResponse } from '../models/api/users';
 import { UserDetails } from '../models/app';
@@ -10,7 +9,8 @@ import { AuthFormData } from '../models/auth';
 import { ApiClient } from './apiClient';
 import { buildRequestBody } from './utilities';
 
-const appClientId = process.env.NEXT_PUBLIC_WEBAPPCLIENTID;
+const { webAppClientId } = config;
+const appClientId = webAppClientId;
 const RequestHeaders = {
   headers: {
     'Content-Type': 'application/json',

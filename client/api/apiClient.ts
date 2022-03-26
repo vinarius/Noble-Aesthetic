@@ -1,13 +1,15 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { config } from '../getConfig';
 import { getUsersApi } from './usersApi';
 
+const { apiDomainName } = config;
 export class ApiClient {
   private client: AxiosInstance;
   private config: AxiosRequestConfig = { headers: {} };
 
   constructor(token?: string) {
     this.client = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_APIDOMAINNAME,
+      baseURL: apiDomainName,
       headers: {
         Accept: 'application/json',
         ...token && { Authorization: token }

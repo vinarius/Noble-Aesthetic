@@ -1,0 +1,14 @@
+{
+  "noble-WebHostStack-prod": {
+    "noblehostBucketNameOutputprod": "",
+    "noblesiteDistributionIdOutputprod": ""
+  },
+  "noble-apiStack-prod": {
+    "nobleapiIdOutputprod": "",
+    "nobleapiUrlOutputprod": "",
+    "nobleapiprodEndpointE1F60701": ""
+  },
+  "noble-usersStack-prod": {
+    "noblewebAppClientIdOutputprod": ""
+  }
+}

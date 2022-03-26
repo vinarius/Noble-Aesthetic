@@ -2,15 +2,17 @@ import { DateTime } from 'luxon';
 import { AppProps } from 'next/app';
 import Router from 'next/router';
 import React, { ReactElement } from 'react';
-
 import { apiClient } from '../api/apiClient';
 import { setAuthHeader } from '../appState/slices/auth';
 import { useAppDispatch, useAppSelector } from '../appState/store';
+import { config } from '../getConfig';
 import Login from '../pages/login';
 import Footer from './footer';
 import Navbar from './navbar';
 
 type CheckAuthProps = Pick<AppProps, 'Component' | 'pageProps'>;
+
+const { stage } = config;
 
 export default function CheckAuth({ Component, pageProps }: CheckAuthProps): ReactElement {
   const { isLoggedIn } = useAppSelector(state => state.auth);
@@ -32,7 +34,7 @@ export default function CheckAuth({ Component, pageProps }: CheckAuthProps): Rea
   if (
     pathname !== '/login' &&
     !isLoggedIn &&
-    process.env.NEXT_PUBLIC_STAGE !== 'prod'
+    stage !== 'prod'
   ) {
     Router.push('/login');
     return <Login />;

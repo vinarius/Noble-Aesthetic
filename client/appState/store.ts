@@ -3,14 +3,15 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { createLogger } from 'redux-logger';
 import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-
+import { config } from '../getConfig';
 import { authSlice } from './slices/auth';
 import { userSlice } from './slices/user';
 
+const { stage } = config;
 const middleware = [];
 
 // Logger must be last in middleware chain to properly resolve promises.
-if (process.env.NEXT_PUBLIC_STAGE !== 'prod') {
+if (stage !== 'prod') {
   const logger = createLogger({ collapsed: true });
   middleware.push(logger);
 }

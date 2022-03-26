@@ -1,10 +1,13 @@
 import Head from 'next/head';
 import React, { ReactElement } from 'react';
+import { config } from '../getConfig';
+
+const { apiDomainName, stage, webAppClientId } = config;
 
 export default function Home(): ReactElement {
-  console.log('NEXT_PUBLIC_APIDOMAINNAME:', process.env.NEXT_PUBLIC_APIDOMAINNAME);
-  console.log('NEXT_PUBLIC_STAGE:', process.env.NEXT_PUBLIC_STAGE);
-  console.log('NEXT_PUBLIC_WEBAPPCLIENTID:', process.env.NEXT_PUBLIC_WEBAPPCLIENTID);
+  console.log('apiDomainName:', apiDomainName);
+  console.log('stage:', stage);
+  console.log('webAppClientId:', webAppClientId);
 
   return (
     <>

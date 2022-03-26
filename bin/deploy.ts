@@ -6,9 +6,11 @@ export async function deploy(): Promise<void> {
   const { IS_JEST, IS_CODEBUILD, STACK } = process.env;
 
   try {
-    const { alias, branch, profile, stage } = await getAppConfig();
+    const { alias, branch, profile, stage, isStagingEnv } = await getAppConfig();
     const profileFlag = IS_CODEBUILD ? '' : `--profile ${profile}`;
-    const outputsFlag = STACK ? '' : `--outputs-file ./cdk-outputs-${stage}.json`;
+    const outputsFlag = STACK ? '' :
+      isStagingEnv ? `--outputs-file ./cdk-outputs-${stage}.json` :
+        `--outputs-file ./dist/cdk-outputs-${stage}.json`;
 
     if (!IS_CODEBUILD) await validateAwsProfile(profile);
 
