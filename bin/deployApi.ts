@@ -21,7 +21,7 @@ export async function deployApi(): Promise<void> {
 
     spawn(`aws apigateway create-deployment --rest-api-id ${restApiId} --stage-name ${stage} ${includeProfile} --region ${env.region}`);
 
-    console.log('\n>>> Deployment complete.');
+    console.log('\n>>> Api deployment complete.');
   } catch (error) {
     const { name, message } = error as Error;
     console.error(`${name}: ${message}`);

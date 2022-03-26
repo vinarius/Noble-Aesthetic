@@ -19,6 +19,7 @@ export class CICDStack extends Stack {
     } = props;
 
     const hostBucketArn = StringParameter.fromStringParameterName(this, `${project}-${stack}-hostBucketArnParam-${stage}`, `/${project}/webhost/hostbucketArn/${stage}`).stringValue;
+    const siteDistributionId = StringParameter.fromStringParameterName(this, `${project}-${stack}-siteDistributionIdParam-${stage}`, `/${project}/webhost/siteDistributionId/${stage}`).stringValue;
 
     new Project(this, `${project}-codeBuildProject-${stage}`, {
       projectName: `${project}-codeBuildProject-${stage}`,
@@ -62,6 +63,13 @@ export class CICDStack extends Stack {
                 resources: [
                   hostBucketArn,
                   `${hostBucketArn}/*`
+                ]
+              }),
+              new PolicyStatement({
+                effect: Effect.ALLOW,
+                actions: ['cloudfront:CreateInvalidation'],
+                resources: [
+                  `arn:${Aws.PARTITION}:cloudfront::${Aws.ACCOUNT_ID}:distribution/${siteDistributionId}`
                 ]
               })
             ]

@@ -18,9 +18,7 @@ async function syncHostBucket() {
   const { IS_CODEBUILD } = process.env;
 
   try {
-    const { profile, project, stage, isStagingEnv, env } = await getAppConfig();
-
-    if (!IS_CODEBUILD && isStagingEnv) throw new Error(`Unable to execute deployFrontend, is a staging environment - ${stage}`);
+    const { profile, project, stage, env } = await getAppConfig();
 
     if (!IS_CODEBUILD) {
       await validateAwsProfile(profile);

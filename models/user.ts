@@ -253,6 +253,7 @@ const adminResetPasswordSchema: Schema = {
   ],
   properties: {
     input: {
+      type: jsonType.OBJECT,
       required: [
         'userId'
       ],

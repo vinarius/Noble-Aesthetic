@@ -43,16 +43,20 @@ async function buildInfrastructure(): Promise<void> {
       certificateId
     });
 
-    const cicdStack = new CICDStack(app, `${project}-CICDStack-${stage}`, {
-      stackName: `${project}-CICDStack-${stage}`,
-      stack: 'cicd',
-      env,
-      branch,
-      project,
-      stage,
-      terminationProtection,
-      isStagingEnv
-    });
+    if (isStagingEnv) {
+      const cicdStack = new CICDStack(app, `${project}-CICDStack-${stage}`, {
+        stackName: `${project}-CICDStack-${stage}`,
+        stack: 'cicd',
+        env,
+        branch,
+        project,
+        stage,
+        terminationProtection,
+        isStagingEnv
+      });
+
+      cicdStack.addDependency(webhostStack);
+    }
 
     const apiStack = new ApiStack(app, `${project}-apiStack-${stage}`, {
       stackName: `${project}-apiStack-${stage}`,
@@ -78,7 +82,6 @@ async function buildInfrastructure(): Promise<void> {
     });
 
     usersStack.addDependency(apiStack);
-    cicdStack.addDependency(webhostStack);
 
     app.synth();
   } catch (error) {

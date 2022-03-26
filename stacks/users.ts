@@ -16,10 +16,10 @@ import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { resolve } from 'path';
-
 import { NobleStackProps } from '../models/cloudResources';
 import { HttpMethod, UserGroup } from '../models/enums';
 import { LambdaDefinition } from '../models/lambda';
+
 
 export class UsersStack extends Stack {
   constructor(scope: Construct, id: string, props: NobleStackProps) {
@@ -50,6 +50,14 @@ export class UsersStack extends Stack {
         }
       },
       selfSignUpEnabled: true,
+      userInvitation: {
+        emailSubject: 'Your Noble Aesthetic Account',
+        emailBody: 'A team administrator has created an account for you. Your username is {username} and temporary password is {####}'
+      },
+      userVerification: {
+        emailSubject: 'Your Noble Aesthetic Account',
+        emailBody: 'Welcome to your Noble Aesthetic account. Your username is {username} and temporary password is {####}'
+      },
       userPoolName: `${project}-${stack}-pool-${stage}`,
       removalPolicy
     });

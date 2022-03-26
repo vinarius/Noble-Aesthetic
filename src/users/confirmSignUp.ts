@@ -21,6 +21,24 @@ const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
+export const newUser: DynamoUserItem = {
+  userName: '',
+  dataKey: 'details',
+  address: {
+    line1: '',
+    line2: '',
+    city: '',
+    state: '',
+    zip: '',
+    country: ''
+  },
+  birthdate: '',
+  firstName: '',
+  gender: '',
+  lastName: '',
+  phoneNumber: ''
+};
+
 const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<HandlerResponse> => {
   validateEnvVars([
     'usersTableName', 
@@ -56,23 +74,7 @@ const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<Handle
     throw err.name?.toLowerCase() === 'codemismatchexception' ? codeMismatchError : err;
   });
 
-  const newUser: DynamoUserItem = {
-    userName,
-    dataKey: 'details',
-    address: {
-      line1: '',
-      line2: '',
-      city: '',
-      state: '',
-      zip: '',
-      country: ''
-    },
-    birthdate: '',
-    firstName: '',
-    gender: '',
-    lastName: '',
-    phoneNumber: ''
-  };
+  newUser.userName = userName;
 
   await docClient.put({
     TableName: usersTableName,

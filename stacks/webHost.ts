@@ -1,4 +1,4 @@
-import { App, Aws, CfnOutput, RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { App, Aws, CfnOutput, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
@@ -6,8 +6,8 @@ import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { BlockPublicAccess, Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
-
 import { NobleStackProps } from '../models/cloudResources';
+
 
 interface WebHostStackProps extends NobleStackProps {
   domainName: string;
@@ -59,6 +59,14 @@ export class WebHostStack extends Stack {
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
       },
       defaultRootObject: 'index.html',
+      errorResponses: [
+        {
+          httpStatus: 403,
+          responseHttpStatus: 200,
+          responsePagePath: '/index.html',
+          ttl: Duration.days(1)
+        }
+      ],
       ...isStagingEnv && {
         certificate: Certificate.fromCertificateArn(this, `${project}-certificateLookup-${stage}`, `arn:${Aws.PARTITION}:acm:${Aws.REGION}:${Aws.ACCOUNT_ID}:certificate/${certificateId}`)
       },
@@ -66,6 +74,11 @@ export class WebHostStack extends Stack {
     });
 
     distribution.applyRemovalPolicy(removalPolicy);
+
+    new StringParameter(this, `${project}-${stack}-siteDistributionIdParam-${stage}`, {
+      parameterName: `/${project}/${stack}/siteDistributionId/${stage}`,
+      stringValue: distribution.distributionId
+    });
 
     new CfnOutput(this, `${project}-siteDistributionIdOutput-${stage}`, {
       value: distribution.distributionId
