@@ -1,16 +1,17 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { config } from '../getConfig';
+import { config, stage } from '../getConfig';
 import { getUsersApi } from './usersApi';
 
-const { apiDomainName, stage } = config;
+const { apiDomainName } = config;
 const isProd = stage === 'prod';
 export class ApiClient {
   private client: AxiosInstance;
   private config: AxiosRequestConfig = { headers: {} };
 
   constructor(token?: string) {
+    console.log('stage:', stage);
     this.client = axios.create({
-      baseURL: `https://${apiDomainName}/`,
+      baseURL: stage === 'prod' || stage === 'dev' ? `https://${apiDomainName}/` : apiDomainName,
       headers: {
         Accept: 'application/json',
         ...token && { Authorization: token }
@@ -42,12 +43,14 @@ export class ApiClient {
 
   public setAuthToken(authToken: string) {
     this.client.defaults.headers.common.Authorization = authToken;
+    this.config.headers!.Authorization = authToken;
   }
 
   public async get<T>(route: string, options?: AxiosRequestConfig): Promise<T> {
     return await this.client.get(route, {
       ...this.config,
-      ...options
+      ...options,
+
     });
   }
 

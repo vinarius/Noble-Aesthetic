@@ -5,15 +5,13 @@ import React, { ReactElement } from 'react';
 import { apiClient } from '../api/apiClient';
 import { setAuthHeader } from '../appState/slices/auth';
 import { useAppDispatch, useAppSelector } from '../appState/store';
-import { config } from '../getConfig';
+import { stage } from '../getConfig';
 import Login from '../pages/login';
 import Footer from './footer';
 import Loading from './loading';
 import Navbar from './navbar';
 
 type CheckAuthProps = Pick<AppProps, 'Component' | 'pageProps'>;
-
-const { stage } = config;
 
 export default function CheckAuth({ Component, pageProps }: CheckAuthProps): ReactElement {
   const { isLoggedIn } = useAppSelector(state => state.auth);

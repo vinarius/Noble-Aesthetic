@@ -6,7 +6,6 @@ import { spawn } from '../lib/spawn';
 export interface ClientStageDefinition {
   apiDomainName: string;
   webAppClientId: string;
-  stage: string;
 }
 
 export interface ClientConfig {
@@ -30,7 +29,6 @@ async function setEnvVars(): Promise<void> {
     const apiUrl = cdkOutputsRaw[`${project}-apiStack-${targetStage}`][`${project}apiUrlOutput${targetStage.replace(/\W/g, '')}`];
 
     const envVars: ClientStageDefinition = {
-      stage: targetStage,
       apiDomainName: isStagingEnv ? apiDomainName : apiUrl,
       webAppClientId
     };
@@ -41,13 +39,11 @@ async function setEnvVars(): Promise<void> {
       const defaultClientConfig: ClientConfig = {
         dev: {
           apiDomainName: '',
-          webAppClientId: '',
-          stage: targetStage
+          webAppClientId: ''
         },
         prod: {
           apiDomainName: '',
-          webAppClientId: '',
-          stage: targetStage
+          webAppClientId: ''
         }
       };
 

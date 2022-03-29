@@ -32,7 +32,7 @@ export default function Login(): ReactElement {
         })
       );
 
-      apiClient.axios.setAuthToken(payload.IdToken);
+      apiClient.axios.setAuthToken(IdToken);
 
       dispatch(
         setUser(user)
