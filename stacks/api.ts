@@ -1,3 +1,4 @@
+/* eslint-disable quotes */
 import { Aws, CfnOutput, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import {
   AccessLogField,
@@ -158,7 +159,7 @@ export class ApiStack extends Stack {
       restApi,
       type: ResponseType.UNAUTHORIZED,
       statusCode: '401',
-      responseHeaders: { 'Access-Control-Allow-Origin': '*' },
+      responseHeaders: { 'Access-Control-Allow-Origin': "'*'" },
       templates: { 'application/json': '{\nsuccess: false,\nerror: "GWRES unauthorized",\nstatusCode: 401\n}' }
     });
 
@@ -166,7 +167,7 @@ export class ApiStack extends Stack {
       restApi,
       type: ResponseType.ACCESS_DENIED,
       statusCode: '403',
-      responseHeaders: { 'Access-Control-Allow-Origin': '*' },
+      responseHeaders: { 'Access-Control-Allow-Origin': "'*'" },
       templates: { 'application/json': '{\nsuccess: false,\nerror: "GWRES access denied",\nstatusCode: 403\n}' }
     });
 
@@ -174,7 +175,7 @@ export class ApiStack extends Stack {
       restApi,
       type: ResponseType.RESOURCE_NOT_FOUND,
       statusCode: '404',
-      responseHeaders: { 'Access-Control-Allow-Origin': '*' },
+      responseHeaders: { 'Access-Control-Allow-Origin': "'*'" },
       templates: { 'application/json': '{\nsuccess: false,\nerror: "GWRES resource not found",\nstatusCode: 404\n}' }
     });
 

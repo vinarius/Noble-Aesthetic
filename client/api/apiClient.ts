@@ -9,14 +9,13 @@ export class ApiClient {
   private client: AxiosInstance;
   private config: AxiosRequestConfig = { headers: {} };
 
-  constructor(token?: string) {
+  constructor() {
     this.client = axios.create({
       baseURL: stage === 'prod' || stage === 'dev' ? `https://${apiDomainName}/` : apiDomainName,
-      headers: {
-        Accept: '*/*',
-        ...token && { Authorization: token }
-      }
+      headers: { Accept: '*/*' }
     });
+
+    this.setAuthToken();
 
     this.client.interceptors.request.use(
       (req) => {
@@ -41,19 +40,16 @@ export class ApiClient {
     );
   }
 
-  public setAuthToken(useIdToken?: boolean = false) {
-    const { accessToken, idToken } = store.getState().auth;
-    // TODO: need to use access token
-    this.client.defaults.headers.common.Authorization = authToken;
-    this.config.headers!.Authorization = authToken;
-    return this;
+  public setAuthToken(token?: string) {
+    const idToken = token ?? store.getState().auth.idToken ?? '';
+    this.client.defaults.headers.common.Authorization = idToken;
+    this.config.headers!.Authorization = idToken;
   }
 
   public async get<T>(route: string, options?: AxiosRequestConfig): Promise<T> {
     return await this.client.get(route, {
       ...this.config,
-      ...options,
-
+      ...options
     });
   }
 

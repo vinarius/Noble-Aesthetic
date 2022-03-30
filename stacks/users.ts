@@ -505,10 +505,7 @@ export class UsersStack extends Stack {
           httpMethod as HttpMethod,
           new LambdaIntegration(nodeLambda),
           {
-            ...auth && {
-              ...authMethodOptions,
-              authorizationScopes: auth.authorizationScopes
-            }
+            ...auth && { ...authMethodOptions }
           }
         );
 
