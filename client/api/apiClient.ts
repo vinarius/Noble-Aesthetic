@@ -43,7 +43,7 @@ export class ApiClient {
 
   public setAuthToken(useIdToken?: boolean = false) {
     const { accessToken, idToken } = store.getState().auth;
-
+    // TODO: need to use access token
     this.client.defaults.headers.common.Authorization = authToken;
     this.config.headers!.Authorization = authToken;
     return this;
