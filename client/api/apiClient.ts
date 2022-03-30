@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { store } from '../appState/store';
 import { config, stage } from '../getConfig';
 import { getUsersApi } from './usersApi';
 
@@ -9,11 +10,10 @@ export class ApiClient {
   private config: AxiosRequestConfig = { headers: {} };
 
   constructor(token?: string) {
-    console.log('stage:', stage);
     this.client = axios.create({
       baseURL: stage === 'prod' || stage === 'dev' ? `https://${apiDomainName}/` : apiDomainName,
       headers: {
-        Accept: 'application/json',
+        Accept: '*/*',
         ...token && { Authorization: token }
       }
     });
@@ -41,9 +41,12 @@ export class ApiClient {
     );
   }
 
-  public setAuthToken(authToken: string) {
+  public setAuthToken(useIdToken?: boolean = false) {
+    const { accessToken, idToken } = store.getState().auth;
+
     this.client.defaults.headers.common.Authorization = authToken;
     this.config.headers!.Authorization = authToken;
+    return this;
   }
 
   public async get<T>(route: string, options?: AxiosRequestConfig): Promise<T> {
@@ -77,7 +80,7 @@ export class ApiClient {
   }
 }
 
-const api = new ApiClient(); // TODO: read auth token from redux store
+const api = new ApiClient();
 export const apiClient = {
   axios: api,
   users: getUsersApi(api)

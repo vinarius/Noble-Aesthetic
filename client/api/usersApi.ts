@@ -22,11 +22,12 @@ export function getUsersApi(api: ApiClient) {
      * Change a user's password with an access token
      */
     changePassword: async (
-      accessToken: string,
       previousPassword: string,
       proposedPassword: string
     ): Promise<LambdaResponse<ChangePasswordResponse>> => {
+      const accessToken = api.getAccessToken();
       return await api
+        .setAuthToken(accessToken as string)
         .post<LambdaResponse<ChangePasswordResponse>>(
           `${basePath}/changePassword`,
           buildRequestBody({
@@ -116,8 +117,10 @@ export function getUsersApi(api: ApiClient) {
     /**
      * Logout a user
      */
-    logout: async (accessToken: string): Promise<LambdaResponse<LogoutResponse>> => {
+    logout: async (): Promise<LambdaResponse<LogoutResponse>> => {
+      const accessToken = api.getAccessToken();
       return await api
+        .setAuthToken(accessToken as string)
         .post<LambdaResponse<LogoutResponse>>(
           `${basePath}/logout`,
           buildRequestBody({ accessToken }),

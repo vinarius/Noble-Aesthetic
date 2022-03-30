@@ -8,6 +8,7 @@
     "build:client": "npm run ts-node bin/buildClient",
     "clean": "cross-env-shell \"rm -rf cdk.out bin/*.js coverage dist lib/*.js models/*.js src/**/*.js stacks/*.js test/*.js config.js\" && mkdir dist",
     "cdk": "cdk",
+    "createDevUsers": "npm run ts-node bin/createDevUsers",
     "deploy": "run-s clean deploy:server build:client deploy:resources",
     "deploy:api": "npm run ts-node bin/deployApi",
     "deploy:client": "npm run ts-node bin/deployClient",

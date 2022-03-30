@@ -14,11 +14,7 @@ export default function Navbar(): ReactElement {
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
-
-    console.log('accessToken:', accessToken);
-
     const { success } = await apiClient.users.logout(accessToken as string);
-
     if (success) {
       dispatch(
         setLogin({
@@ -29,10 +25,8 @@ export default function Navbar(): ReactElement {
           RefreshToken: ''
         })
       );
-
       Router.push('/login');
     }
-
     setIsLoggingOut(false);
   };
 

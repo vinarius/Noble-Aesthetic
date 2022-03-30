@@ -1,7 +1,9 @@
 import {
+  AdminAddUserToGroupCommand,
   AdminCreateUserCommand,
   AdminSetUserPasswordCommand,
   CognitoIdentityProviderClient,
+  CreateGroupCommand,
   ListUserPoolsCommand,
   UserPoolDescriptionType
 } from '@aws-sdk/client-cognito-identity-provider';
@@ -28,6 +30,32 @@ export async function createDevUsers(): Promise<void> {
 
     const { UserPools } = await cognitoClient.send(new ListUserPoolsCommand({ MaxResults: 60 }));
     const { Id } = UserPools?.find(pool => pool.Name?.toLowerCase().endsWith('dev')) as UserPoolDescriptionType;
+
+    const createGroupPromises = [];
+
+    createGroupPromises.push(
+      cognitoClient.send(
+        new CreateGroupCommand({
+          GroupName: 'admin',
+          UserPoolId: Id,
+          Precedence: 0
+        })
+      )
+    );
+
+    createGroupPromises.push(
+      cognitoClient.send(
+        new CreateGroupCommand({
+          GroupName: 'user',
+          UserPoolId: Id,
+          Precedence: 1
+        })
+      )
+    );
+
+    await Promise.all(createGroupPromises).catch(err => {
+      if (err.name !== 'GroupExistsException') throw err;
+    });
 
     const users = [
       'vindevccm@gmail.com',
@@ -67,6 +95,19 @@ export async function createDevUsers(): Promise<void> {
       if (err.name !== 'UsernameExistsException') throw err;
     });
 
+    const addUserToGroupPromises = [];
+    for (const { username } of users) {
+      addUserToGroupPromises.push(
+        cognitoClient.send(
+          new AdminAddUserToGroupCommand({
+            GroupName: 'admin',
+            UserPoolId: Id,
+            Username: username
+          })
+        )
+      );
+    }
+
     const adminSetUserPasswordPromises = [];
     for (const { username } of users) {
       const adminSetUserPasswordPromise = cognitoClient.send(
@@ -81,7 +122,10 @@ export async function createDevUsers(): Promise<void> {
       adminSetUserPasswordPromises.push(adminSetUserPasswordPromise);
     }
 
-    await Promise.all(adminSetUserPasswordPromises);
+    await Promise.all([
+      ...addUserToGroupPromises,
+      ...adminSetUserPasswordPromises
+    ]);
 
     const { TableNames } = await dynamoClient.send(new ListTablesCommand({}));
     const tableName = TableNames?.find(name => name.includes('dev')) as string;
