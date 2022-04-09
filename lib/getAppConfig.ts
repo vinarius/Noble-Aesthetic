@@ -25,7 +25,7 @@ export async function getAppConfig(): Promise<ApplicationDefinition> {
   const stage = branch === 'master' ? 'prod' :
     branch === 'develop' ? 'dev' :
       branch.includes('/') ? branch.split('/').reverse()[0] :
-        branch; // This paradigm allows for ephemeral resource creation for team development.
+        branch; // This paradigm allows for ephemeral resource creation.
 
   return {
     ...config,

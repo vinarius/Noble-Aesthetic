@@ -17,16 +17,15 @@ async function setEnvVars(): Promise<void> {
     const { stage, apiDomainName, project, isStagingEnv } = await getAppConfig();
     const envFilePath = resolveFromRoot('client', '.env');
 
-    const targetStage = stage === 'prod' ? stage : 'dev';
-
     if (existsSync(envFilePath))
       rmSync(envFilePath);
 
-    writeFileSync(envFilePath, `NEXT_PUBLIC_STAGE=${targetStage}`);
+    writeFileSync(envFilePath, `NEXT_PUBLIC_STAGE=${stage}`);
 
-    const cdkOutputsRaw = JSON.parse(readFileSync(resolveFromRoot(`cdk-outputs-${targetStage}.json`)).toString());
-    const webAppClientId = cdkOutputsRaw[`${project}-usersStack-${targetStage}`][`${project}webAppClientIdOutput${targetStage.replace(/\W/g, '')}`];
-    const apiUrl = cdkOutputsRaw[`${project}-apiStack-${targetStage}`][`${project}apiUrlOutput${targetStage.replace(/\W/g, '')}`];
+    const outputsPath = resolveFromRoot(isStagingEnv ? `cdk-outputs-${stage}.json` : 'dist', `cdk-outputs-${stage}.json`);
+    const cdkOutputsRaw = JSON.parse(readFileSync(outputsPath).toString());
+    const webAppClientId = cdkOutputsRaw[`${project}-usersStack-${stage}`][`${project}webAppClientIdOutput${stage.replace(/\W/g, '')}`];
+    const apiUrl = cdkOutputsRaw[`${project}-apiStack-${stage}`][`${project}apiUrlOutput${stage.replace(/\W/g, '')}`];
 
     const envVars: ClientStageDefinition = {
       apiDomainName: isStagingEnv ? apiDomainName : apiUrl,
@@ -53,7 +52,7 @@ async function setEnvVars(): Promise<void> {
     const clientConfigOriginal = JSON.parse(readFileSync(clientConfigPath).toString()) as ClientConfig;
     const clientConfigRefreshed: ClientConfig = {
       ...clientConfigOriginal,
-      [targetStage]: envVars
+      [stage]: envVars
     };
 
     writeFileSync(clientConfigPath, JSON.stringify(clientConfigRefreshed));

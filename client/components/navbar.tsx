@@ -32,7 +32,7 @@ export default function Navbar(): ReactElement {
 
   return <>
     <header className='w-full'>
-      <nav className='w-full flex items-center justify-between bg-black text-white text-lg'>
+      <nav className='w-full flex items-center justify-between text-lg'>
         <div className='m-4 p-1 rounded cursor-pointer'>
           Profile: {username}
         </div>

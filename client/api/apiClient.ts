@@ -23,18 +23,18 @@ export class ApiClient {
         return req
       },
       (error) => {
-        if (!isProd) console.log('request error here', error);
+        if (!isProd) console.log('request error:', error);
         return error;
       }
     );
 
     this.client.interceptors.response.use(
       (res) => {
-        if (!isProd) console.log('response here:\n', res.data);
+        if (!isProd) console.log('response:\n', res.data);
         return Promise.resolve({ ...res.data });
       },
       (error) => {
-        if (!isProd) console.log('response error here', error.response?.data);
+        if (!isProd) console.log('response error:', error.response?.data);
         return Promise.reject({ ...error.response?.data });
       }
     );
