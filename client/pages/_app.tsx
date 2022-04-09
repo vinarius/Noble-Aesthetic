@@ -6,8 +6,6 @@ import { persistor, store } from '../appState/store';
 import CheckAuth from '../components/checkAuth';
 import '../styles/globals.css';
 
-
-
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <Provider store={store}>

@@ -1,8 +1,7 @@
 import {
   AdminCreateUserCommand,
   AdminSetUserPasswordCommand,
-  CognitoIdentityProviderClient,
-  ListUserPoolsCommand,
+  CognitoIdentityProviderClient, ListUserPoolsCommand,
   UserPoolDescriptionType
 } from '@aws-sdk/client-cognito-identity-provider';
 import { DynamoDBClient, ListTablesCommand } from '@aws-sdk/client-dynamodb';
@@ -19,7 +18,7 @@ const docClient = DynamoDBDocument.from(dynamoClient);
 
 export async function createDevUsers(): Promise<void> {
   try {
-    const { profile, env } = await getAppConfig();
+    const { profile, env, stage } = await getAppConfig();
 
     await validateAwsProfile(profile);
 
@@ -27,7 +26,7 @@ export async function createDevUsers(): Promise<void> {
     process.env.AWS_REGION = env.region;
 
     const { UserPools } = await cognitoClient.send(new ListUserPoolsCommand({ MaxResults: 60 }));
-    const { Id } = UserPools?.find(pool => pool.Name?.toLowerCase().endsWith('dev')) as UserPoolDescriptionType;
+    const { Id } = UserPools?.find(pool => pool.Name?.toLowerCase().endsWith(stage.toLowerCase())) as UserPoolDescriptionType;
 
     const users = [
       'vindevccm@gmail.com',
@@ -84,7 +83,7 @@ export async function createDevUsers(): Promise<void> {
     await Promise.all(adminSetUserPasswordPromises);
 
     const { TableNames } = await dynamoClient.send(new ListTablesCommand({}));
-    const tableName = TableNames?.find(name => name.includes('dev')) as string;
+    const tableName = TableNames?.find(name => name.includes(stage)) as string;
 
     const { success, unprocessedItemsCount } = await batchPutWrite(docClient, tableName, users);
 

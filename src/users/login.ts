@@ -17,8 +17,8 @@ interface LoginResponse extends HandlerResponse {
     ExpiresIn?: number;
     IdToken?: string;
     RefreshToken?: string;
+    user: DynamoUserItem;
   };
-  user: DynamoUserItem;
 }
 
 const {
@@ -65,7 +65,7 @@ const loginHandler = async (event: APIGatewayProxyEvent): Promise<LoginResponse>
   const result: InitiateAuthCommandOutput = await login(cognitoClient, appClientId, username, password)
     .catch(err => {
       logger.debug('login operation failed with error:', err);
-      throw err.name === 'NotAuthorizedException' ? buildNotAuthorizedError('Invalid username or password') : buildUnknownError(err);
+      throw err.name === 'NotAuthorizedException' || err.name === 'UserNotFoundException' ? buildNotAuthorizedError('Invalid username or password') : buildUnknownError(err);
     });
 
   logger.debug('result:', result);
@@ -100,8 +100,7 @@ const loginHandler = async (event: APIGatewayProxyEvent): Promise<LoginResponse>
 
   return {
     success: true,
-    payload: { AccessToken, ExpiresIn, IdToken, RefreshToken },
-    user
+    payload: { AccessToken, ExpiresIn, IdToken, RefreshToken, user }
   };
 };
 

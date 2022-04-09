@@ -54,6 +54,7 @@ export class WebHostStack extends Stack {
     });
 
     const distribution = new Distribution(this, `${project}-siteDistribution-${stage}`, {
+      comment: `${project}-webhost-${stage}`,
       defaultBehavior: {
         origin: new S3Origin(hostBucket),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS

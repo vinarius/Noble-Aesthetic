@@ -6,6 +6,7 @@ export interface LambdaResponse<T> {
   success?: boolean;
   payload: T;
   error?: string;
+  reason?: string;
   validationErrors?: ValidationError[];
 }
 

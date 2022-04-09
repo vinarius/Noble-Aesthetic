@@ -6,17 +6,20 @@ import { setUser } from '../appState/slices/user';
 import { useAppDispatch, useAppSelector } from '../appState/store';
 import styles from './login.module.css';
 
-
 export default function Login(): ReactElement {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
+  const [isInvalidLogin, setIsInvalidLogin] = useState<boolean>(false);
   const dispatch = useAppDispatch();
+
+
 
   const handleSubmitLogin = async (event: FormEvent) => {
     event.preventDefault();
     setIsLoggingIn(true);
-    const { success, payload } = await apiClient.users.login({ email: username, password });
+    setIsInvalidLogin(false);
+    const { success, payload, reason } = await apiClient.users.login({ email: username, password });
     setIsLoggingIn(false);
 
     if (success) {
@@ -32,7 +35,7 @@ export default function Login(): ReactElement {
         })
       );
 
-      apiClient.axios.setAuthToken(payload.IdToken);
+      apiClient.axios.setAuthToken(IdToken);
 
       dispatch(
         setUser(user)
@@ -40,6 +43,10 @@ export default function Login(): ReactElement {
 
       Router.push('/');
 
+    } else {
+      if (reason === 'NotFound' || reason === 'NotAuthorized') {
+        setIsInvalidLogin(true);
+      }
     }
   };
 
@@ -77,12 +84,17 @@ export default function Login(): ReactElement {
           Login
         </button>
         <div
-          className={`${!isLoggingIn && 'invisible'}`}
+          className={!isLoggingIn ? 'hidden' : 'mt-3'}
         >
           Logging in...
         </div>
+        <div
+          className={!isInvalidLogin ? 'hidden' : 'mt-3 text-red-500'}
+        >
+          Invalid username or password
+        </div>
       </div>
-      <hr className='to-black h-1 w-3/4 my-3' />
+      <hr className='border-black h-1 w-3/4 my-3' />
       <p>Forgot Password?</p>
     </form>
   </div>;

@@ -25,8 +25,8 @@ async function syncHostBucket() {
       process.env.AWS_REGION = env.region;
     }
 
-    const cdkOutputsPath = isStagingEnv ? resolveFromRoot(`cdk-outputs-${stage}.json`) : resolveFromRoot('dist', `cdk-outputs-${stage}.json`)
-    const cdkOutputsRaw = JSON.parse(readFileSync(cdkOutputsPath).toString());
+    const outputsPath = resolveFromRoot(isStagingEnv ? `cdk-outputs-${stage}.json` : 'dist', `cdk-outputs-${stage}.json`);
+    const cdkOutputsRaw = JSON.parse(readFileSync(outputsPath).toString());
     const hostBucketName = cdkOutputsRaw[`${project}-WebHostStack-${stage}`][`${project}hostBucketNameOutput${stage.replace(/\W/g, '')}`];
     const distributionId = cdkOutputsRaw[`${project}-WebHostStack-${stage}`][`${project}siteDistributionIdOutput${stage.replace(/\W/g, '')}`];
 

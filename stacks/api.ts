@@ -1,3 +1,4 @@
+/* eslint-disable quotes */
 import { Aws, CfnOutput, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import {
   AccessLogField,
@@ -16,13 +17,13 @@ import {
 } from 'aws-cdk-lib/aws-apigateway';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { AnyPrincipal, ManagedPolicy, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { LogGroup } from 'aws-cdk-lib/aws-logs';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { ApiGatewayDomain } from 'aws-cdk-lib/aws-route53-targets';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
-
 import { NobleStackProps } from '../models/cloudResources';
+
 
 interface ApiStackProps extends NobleStackProps {
   apiDomainName: string;
@@ -48,6 +49,7 @@ export class ApiStack extends Stack {
 
     const apiLogGroup = new LogGroup(this, `${project}-${stack}-ApiLogGroup-${stage}`, {
       logGroupName: `${project}-${stack}-ApiLogGroup-${stage}`,
+      retention: stage === 'prod' ? RetentionDays.TWO_YEARS : RetentionDays.ONE_DAY,
       removalPolicy
     });
 
@@ -157,27 +159,24 @@ export class ApiStack extends Stack {
       restApi,
       type: ResponseType.UNAUTHORIZED,
       statusCode: '401',
-      templates: {
-        'application/json': '{\nsuccess: false,\nerror: "unauthorized",\nstatusCode: 401\n}'
-      }
+      responseHeaders: { 'Access-Control-Allow-Origin': "'*'" },
+      templates: { 'application/json': '{\nsuccess: false,\nerror: "GWRES unauthorized",\nstatusCode: 401\n}' }
     });
 
     new GatewayResponse(this, `${project}-${stack}-forbiddenResponse-${stage}`, {
       restApi,
       type: ResponseType.ACCESS_DENIED,
       statusCode: '403',
-      templates: {
-        'application/json': '{\nsuccess: false,\nerror: "access denied",\nstatusCode: 403\n}'
-      }
+      responseHeaders: { 'Access-Control-Allow-Origin': "'*'" },
+      templates: { 'application/json': '{\nsuccess: false,\nerror: "GWRES access denied",\nstatusCode: 403\n}' }
     });
 
     new GatewayResponse(this, `${project}-${stack}-notFoundResponse-${stage}`, {
       restApi,
       type: ResponseType.RESOURCE_NOT_FOUND,
       statusCode: '404',
-      templates: {
-        'application/json': '{\nsuccess: false,\nerror: "resource not found",\nstatusCode: 404\n}'
-      }
+      responseHeaders: { 'Access-Control-Allow-Origin': "'*'" },
+      templates: { 'application/json': '{\nsuccess: false,\nerror: "GWRES resource not found",\nstatusCode: 404\n}' }
     });
 
     // deployApi.ts script is dependent on reading this logical id.

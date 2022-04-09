@@ -1,23 +1,23 @@
 import { DateTime } from 'luxon';
 import { AppProps } from 'next/app';
-import Router from 'next/router';
+import { useRouter } from 'next/router';
 import React, { ReactElement } from 'react';
 import { apiClient } from '../api/apiClient';
 import { setAuthHeader } from '../appState/slices/auth';
 import { useAppDispatch, useAppSelector } from '../appState/store';
-import { config } from '../getConfig';
+import { stage } from '../getConfig';
 import Login from '../pages/login';
 import Footer from './footer';
+import Loading from './loading';
 import Navbar from './navbar';
 
 type CheckAuthProps = Pick<AppProps, 'Component' | 'pageProps'>;
 
-const { stage } = config;
-
 export default function CheckAuth({ Component, pageProps }: CheckAuthProps): ReactElement {
   const { isLoggedIn } = useAppSelector(state => state.auth);
   const dispatch = useAppDispatch();
-  const { pathname } = Router;
+  const router = useRouter();
+  const { pathname } = router;
   const { idToken, tokenExpiration, isAuthHeaderSet } = useAppSelector(state => state.auth);
 
   if (!isAuthHeaderSet && idToken && tokenExpiration && tokenExpiration > DateTime.utc()) {
@@ -36,8 +36,18 @@ export default function CheckAuth({ Component, pageProps }: CheckAuthProps): Rea
     !isLoggedIn &&
     stage !== 'prod'
   ) {
-    Router.push('/login');
+    router.replace('/login');
     return <Login />;
+  }
+
+  if (pathname === '/_error') {
+    console.log('error');
+    router.replace('/');
+    return <Loading />;
+  }
+
+  if (document.location.pathname !== pathname) {
+    document.location.pathname = pathname;
   }
 
   return <>

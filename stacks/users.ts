@@ -480,7 +480,7 @@ export class UsersStack extends Stack {
         bundling: {
           minify: true
         },
-        logRetention: isStagingEnv ? RetentionDays.INFINITE : RetentionDays.THREE_DAYS,
+        logRetention: isStagingEnv ? RetentionDays.TWO_YEARS : RetentionDays.THREE_DAYS,
         projectRoot: resolve(__dirname, '..')
       });
 
@@ -505,10 +505,7 @@ export class UsersStack extends Stack {
           httpMethod as HttpMethod,
           new LambdaIntegration(nodeLambda),
           {
-            ...auth && {
-              ...authMethodOptions,
-              authorizationScopes: auth.authorizationScopes
-            }
+            ...auth && { ...authMethodOptions }
           }
         );
 

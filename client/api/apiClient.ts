@@ -1,21 +1,21 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { config } from '../getConfig';
+import { store } from '../appState/store';
+import { config, stage } from '../getConfig';
 import { getUsersApi } from './usersApi';
 
-const { apiDomainName, stage } = config;
+const { apiDomainName } = config;
 const isProd = stage === 'prod';
 export class ApiClient {
   private client: AxiosInstance;
   private config: AxiosRequestConfig = { headers: {} };
 
-  constructor(token?: string) {
+  constructor() {
     this.client = axios.create({
-      baseURL: `https://${apiDomainName}/`,
-      headers: {
-        Accept: 'application/json',
-        ...token && { Authorization: token }
-      }
+      baseURL: stage === 'prod' || stage === 'dev' ? `https://${apiDomainName}/` : apiDomainName,
+      headers: { Accept: '*/*' }
     });
+
+    this.setAuthToken();
 
     this.client.interceptors.request.use(
       (req) => {
@@ -23,25 +23,27 @@ export class ApiClient {
         return req
       },
       (error) => {
-        if (!isProd) console.log('request error here', error);
+        if (!isProd) console.log('request error:', error);
         return error;
       }
     );
 
     this.client.interceptors.response.use(
       (res) => {
-        if (!isProd) console.log('response here:\n', res.data);
+        if (!isProd) console.log('response:\n', res.data);
         return Promise.resolve({ ...res.data });
       },
       (error) => {
-        if (!isProd) console.log('response error here', error.response?.data);
+        if (!isProd) console.log('response error:', error.response?.data);
         return Promise.reject({ ...error.response?.data });
       }
     );
   }
 
-  public setAuthToken(authToken: string) {
-    this.client.defaults.headers.common.Authorization = authToken;
+  public setAuthToken(token?: string) {
+    const idToken = token ?? store.getState().auth.idToken ?? '';
+    this.client.defaults.headers.common.Authorization = idToken;
+    this.config.headers!.Authorization = idToken;
   }
 
   public async get<T>(route: string, options?: AxiosRequestConfig): Promise<T> {
@@ -74,7 +76,7 @@ export class ApiClient {
   }
 }
 
-const api = new ApiClient(); // TODO: read auth token from redux store
+const api = new ApiClient();
 export const apiClient = {
   axios: api,
   users: getUsersApi(api)

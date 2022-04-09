@@ -1,0 +1,8 @@
+.triangle-border {
+  height: 15%;
+  background: linear-gradient(to left top, rgba(75, 85, 99, 1) 50%, transparent 50%);
+}
+
+.h-30rem {
+  height: 30rem;
+}
