@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Router from 'next/router';
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement, useCallback, useState } from 'react';
 import { apiClient } from '../api/apiClient';
 import { setLogin } from '../appState/slices/auth';
 import { useAppDispatch, useAppSelector } from '../appState/store';
@@ -9,8 +9,14 @@ export default function Navbar(): ReactElement {
   const username = useAppSelector(state => state.user.username);
   const accessToken = useAppSelector(state => state.auth.accessToken);
   const dispatch = useAppDispatch();
-
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
+  const [navHeight, setNavHeight] = useState<number>(0);
+
+  const nav = useCallback(node => {
+    if (node !== null) {
+      setNavHeight(node.getBoundingClientRect().height);
+    }
+  }, []);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -32,7 +38,10 @@ export default function Navbar(): ReactElement {
 
   return <>
     <header className='w-full'>
-      <nav className='w-full flex items-center justify-between text-lg'>
+      <nav
+        className='w-full flex items-center justify-between text-lg fixed bg-white opacity-90'
+        ref={nav}
+      >
         <div className='m-4 p-1 rounded cursor-pointer'>
           Profile: {username}
         </div>
@@ -63,6 +72,10 @@ export default function Navbar(): ReactElement {
           </div>
         </div>
       </nav>
+      <div
+        className='invisible'
+        style={{ height: navHeight }}
+      ></div>
     </header>
   </>;
 }

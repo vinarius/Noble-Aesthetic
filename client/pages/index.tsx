@@ -12,9 +12,12 @@ export default function Home(): ReactElement {
 
       <main className='w-full'>
         <div className='h-96 flex items-center'>
-          <div className='mx-auto md:max-w-md md:ml-10'>
-            <p className='text-xl md:text-3xl'>
-              Welcome to Noble Aesthetic
+          <div className='mx-auto md:max-w-lg'>
+            <p className='text-5xl md:text-5xl'>
+              Lorem, ipsum dolor.
+            </p>
+            <p className='mt-2 md:text-2xl'>
+              Lorem ipsum dolor sit amet.
             </p>
           </div>
         </div>
