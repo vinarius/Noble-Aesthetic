@@ -5,7 +5,7 @@ import {
   UserType
 } from '@aws-sdk/client-cognito-identity-provider';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocument, UpdateCommandOutput } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { adminDeleteUserByUserName } from '../../lib/cognito';
 import { throwResourceExistsError, throwUnknownError, throwValidationError } from '../../lib/errors';
@@ -38,10 +38,7 @@ const adminCreateUserHandler = async (event: APIGatewayProxyEvent): Promise<Dyna
   logger.debug('userParams:', userParams);
   logger.debug('isValid:', isValid);
 
-  if (!isValid) {
-    logger.debug('adminCreateUser input was not valid. Throwing an error.');
-    throwValidationError(validateAdminCreateUser.errors);
-  }
+  if (!isValid) throwValidationError(validateAdminCreateUser.errors);
 
   const {
     username,
@@ -57,7 +54,7 @@ const adminCreateUserHandler = async (event: APIGatewayProxyEvent): Promise<Dyna
     }
   });
 
-  if (userNameTaken.Count! > 0) throwResourceExistsError(username);
+  if (userNameTaken.Count! > 0) throwResourceExistsError(`A username with the name ${username} already exists.`);
 
   const createCognitoUserCommand = new AdminCreateUserCommand({
     UserPoolId: userPoolId,
@@ -101,7 +98,7 @@ const adminCreateUserHandler = async (event: APIGatewayProxyEvent): Promise<Dyna
     throwUnknownError(error);
   });
 
-  return dynamoResponse.Attributes as DynamoUserItem;
+  return (dynamoResponse as UpdateCommandOutput).Attributes as DynamoUserItem;
 };
 
 export async function handler(event: APIGatewayProxyEvent) {

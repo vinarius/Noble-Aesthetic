@@ -1,14 +1,14 @@
 import { CodeDeliveryDetailsType, CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { forgotPassword } from '../../lib/cognito';
+import { throwNotAuthorizedError, throwValidationError } from '../../lib/errors';
 import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { HandlerResponse } from '../../models/response';
 import { ForgotPasswordReqBody, validateForgotPassword } from '../../models/user';
 
-interface ForgotPasswordResponse extends HandlerResponse {
+interface ForgotPasswordResponse {
   details: CodeDeliveryDetailsType
 }
 
@@ -30,10 +30,7 @@ const forgotPasswordHandler = async (event: APIGatewayProxyEvent): Promise<Forgo
   logger.debug('validClientIds:', validClientIds);
   logger.debug('isValid:', isValid);
 
-  if (!isValid) {
-    logger.debug('forgotPassword input was not valid. Throwing an error.');
-    throwValidationError(validateForgotPassword.errors);
-  }
+  if (!isValid) throwValidationError(validateForgotPassword.errors);
 
   const {
     appClientId,
@@ -45,16 +42,10 @@ const forgotPasswordHandler = async (event: APIGatewayProxyEvent): Promise<Forgo
     throwNotAuthorizedError(`Appclient ID '${appClientId}' is Invalid`);
   }
 
-  const { CodeDeliveryDetails } = await forgotPassword(cognitoClient, appClientId, username)
-    .catch(err => {
-      logger.debug('forgotPassword operation failed with error:', err);
-      throwUnknownError(err);
-    });
-  logger.debug('CodeDeliveryDetails:', CodeDeliveryDetails);
+  const { CodeDeliveryDetails } = await forgotPassword(cognitoClient, appClientId, username);
 
   return {
-    success: true,
-    details: CodeDeliveryDetails!
+    details: CodeDeliveryDetails as CodeDeliveryDetailsType
   };
 };
 

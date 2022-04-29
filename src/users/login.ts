@@ -3,22 +3,19 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument, QueryCommandInput } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { login } from '../../lib/cognito';
+import { throwNotAuthorizedError, throwNotFoundError, throwUnknownError, throwValidationError } from '../../lib/errors';
 import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { buildNotAuthorizedError, buildUnknownError } from '../../models/errors';
-import { HandlerResponse } from '../../models/response';
 import { DynamoUserItem, LoginReqBody, validateLogin } from '../../models/user';
 
-interface LoginResponse extends HandlerResponse {
-  payload: {
-    AccessToken?: string;
-    ExpiresIn?: number;
-    IdToken?: string;
-    RefreshToken?: string;
-    user: DynamoUserItem;
-  };
+interface LoginResponse {
+  AccessToken?: string;
+  ExpiresIn?: number;
+  IdToken?: string;
+  RefreshToken?: string;
+  user: DynamoUserItem;
 }
 
 const {
@@ -46,10 +43,7 @@ const loginHandler = async (event: APIGatewayProxyEvent): Promise<LoginResponse>
   logger.debug('validClientIds:', validClientIds);
   logger.debug('isValid:', isValid);
 
-  if (!isValid) {
-    logger.debug('login input was not valid. Throwing an error.');
-    throwValidationError(validateLogin.errors);
-  }
+  if (!isValid) throwValidationError(validateLogin.errors);
 
   const {
     appClientId,
@@ -57,15 +51,12 @@ const loginHandler = async (event: APIGatewayProxyEvent): Promise<LoginResponse>
     password
   } = params.input;
 
-  if (!validClientIds.includes(appClientId)) {
-    logger.debug('validClientIds does not include appClientId. Throwing an error.');
-    throwNotAuthorizedError(`Appclient ID '${appClientId}' is Invalid`);
-  }
+  if (!validClientIds.includes(appClientId)) throwNotAuthorizedError(`Appclient ID '${appClientId}' is Invalid`);
 
   const result: InitiateAuthCommandOutput = await login(cognitoClient, appClientId, username, password)
     .catch(err => {
       logger.debug('login operation failed with error:', err);
-      throw err.name === 'NotAuthorizedException' || err.name === 'UserNotFoundException' ? buildNotAuthorizedError('Invalid username or password') : buildUnknownError(err);
+      throw err.name === 'NotAuthorizedException' || err.name === 'UserNotFoundException' ? throwNotAuthorizedError('Invalid username or password') : throwUnknownError(err);
     });
 
   logger.debug('result:', result);
@@ -80,28 +71,16 @@ const loginHandler = async (event: APIGatewayProxyEvent): Promise<LoginResponse>
   };
   logger.debug('queryOptions:', queryOptions);
 
-  const itemQuery = await docClient.query(queryOptions)
-    .catch(err => {
-      logger.debug('docClient query operation failed with error:', err);
-      throwUnknownError(err);
-    });
+  const { Items, Count } = await docClient.query(queryOptions);
 
-  logger.debug('itemQuery:', itemQuery);
+  if (Count === 0) throwNotFoundError(`User '${username}' not found`);
 
-  if (itemQuery.Count === 0) {
-    logger.debug('itemQuery returned 0 items. Throwing an error.');
-    throwNotFoundError(username);
-  }
-
-  const user = itemQuery.Items?.[0] as DynamoUserItem;
+  const user = Items?.[0] as DynamoUserItem;
   logger.debug('user:', user);
 
   const { AccessToken, ExpiresIn, IdToken, RefreshToken } = result.AuthenticationResult as AuthenticationResultType;
 
-  return {
-    success: true,
-    payload: { AccessToken, ExpiresIn, IdToken, RefreshToken, user }
-  };
+  return { AccessToken, ExpiresIn, IdToken, RefreshToken, user };
 };
 
 export async function handler(event: APIGatewayProxyEvent) {

@@ -15,7 +15,8 @@ export async function deployApi(): Promise<void> {
 
     console.log('\n>>> Deploying api gateway api.\n');
 
-    const cdkOutputsPath = isStagingEnv ? resolveFromRoot(`cdk-outputs-${stage}.json`) : resolveFromRoot('dist', `cdk-outputs-${stage}.json`)
+    const input = isStagingEnv ? [`cdk-outputs-${stage}.json`] : ['dist', `cdk-outputs-${stage}.json`];
+    const cdkOutputsPath = resolveFromRoot(...input);
     const cdkOutputsRaw = JSON.parse(readFileSync(cdkOutputsPath).toString());
     const restApiId = cdkOutputsRaw[`${project}-apiStack-${stage}`][`${project}apiIdOutput${stage.replace(/\W/g, '')}`];
 

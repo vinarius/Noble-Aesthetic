@@ -1,14 +1,14 @@
 import { CognitoIdentityProviderClient, SignUpCommandOutput } from '@aws-sdk/client-cognito-identity-provider';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { signUp } from '../../lib/cognito';
+import { throwNotAuthorizedError, throwValidationError } from '../../lib/errors';
 import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { HandlerResponse } from '../../models/response';
 import { SignUpUserReqBody, validateSignUpUser } from '../../models/user';
 
-interface SignUpResponse extends HandlerResponse {
+interface SignUpResponse {
   details: SignUpCommandOutput;
 }
 
@@ -30,10 +30,7 @@ const signUpHandler = async (event: APIGatewayProxyEvent): Promise<SignUpRespons
   logger.debug('validClientIds:', validClientIds);
   logger.debug('isValid:', isValid);
 
-  if (!isValid) {
-    logger.debug('signUpUser input was not valid. Throwing an error.');
-    throwValidationError(validateSignUpUser.errors);
-  }
+  if (!isValid) throwValidationError(validateSignUpUser.errors);
 
   const {
     appClientId,
@@ -41,21 +38,15 @@ const signUpHandler = async (event: APIGatewayProxyEvent): Promise<SignUpRespons
     password
   } = params.input;
 
-  if (!validClientIds.includes(appClientId)) {
-    logger.debug('validClientIds does not include appClientId. Throwing an error.');
-    throwNotAuthorizedError(`Appclient ID '${appClientId}' is Invalid`);
-  }
+  if (!validClientIds.includes(appClientId)) throwNotAuthorizedError(`Appclient ID '${appClientId}' is Invalid`);
 
-  const details: SignUpCommandOutput = await signUp(cognitoClient, appClientId, username, password)
-    .catch(err => {
-      logger.debug('signUp operation failed with error:', err);
-      throwUnknownError(err);
-    });
+  // TODO: verify user does not exist, else throw error
+
+  const details: SignUpCommandOutput = await signUp(cognitoClient, appClientId, username, password);
 
   logger.debug('details:', details);
 
   return {
-    success: true,
     details
   };
 };

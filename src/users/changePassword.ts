@@ -1,10 +1,10 @@
 import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { changePassword } from '../../lib/cognito';
+import { throwNotAuthorizedError, throwUnknownError, throwValidationError } from '../../lib/errors';
 import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
-import { buildNotAuthorizedError, buildUnknownError } from '../../models/errors';
 import { HandlerResponse } from '../../models/response';
 import { ChangePasswordReqBody, validateChangePassword } from '../../models/user';
 
@@ -18,10 +18,7 @@ const changePasswordHandler = async (event: APIGatewayProxyEvent): Promise<Handl
   logger.debug('userParams:', userParams);
   logger.debug('isValid:', isValid);
 
-  if (!isValid) {
-    logger.debug('changePassword input was not valid. Throwing an error.');
-    throwValidationError(validateChangePassword.errors);
-  }
+  if (!isValid) throwValidationError(validateChangePassword.errors);
 
   const {
     accessToken,
@@ -29,17 +26,11 @@ const changePasswordHandler = async (event: APIGatewayProxyEvent): Promise<Handl
     proposedPassword
   } = userParams.input;
 
-  const changePasswordResponse = await changePassword(cognitoClient, accessToken, previousPassword, proposedPassword)
+  await changePassword(cognitoClient, accessToken, previousPassword, proposedPassword)
     .catch(error => {
       logger.debug('changePassword operation failed with error:', error);
-      throw error.name === 'NotAuthorizedException' ? buildNotAuthorizedError(error) : buildUnknownError(error);
+      error.name === 'NotAuthorizedException' ? throwNotAuthorizedError(error) : throwUnknownError(error);
     });
-
-  logger.debug('changePasswordResponse:', changePasswordResponse);
-
-  return {
-    success: true
-  };
 };
 
 export async function handler(event: APIGatewayProxyEvent) {

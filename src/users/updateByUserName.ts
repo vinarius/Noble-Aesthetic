@@ -1,16 +1,12 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument, QueryCommandInput, UpdateCommandInput } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
+import { throwNotFoundError, throwValidationError } from '../../lib/errors';
 import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { HandlerResponse } from '../../models/response';
 import { DynamoUserItem, UpdateUserAddress, UpdateUserItem, validateUpdateUser } from '../../models/user';
-
-interface UpdateUserResponse extends HandlerResponse {
-  user?: DynamoUserItem;
-}
 
 const {
   usersTableName = ''
@@ -20,7 +16,7 @@ const logger = LoggerFactory.getLogger();
 const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
 
-const updateUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<UpdateUserResponse> => {
+const updateUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<DynamoUserItem> => {
   validateEnvVars(['usersTableName']);
 
   const partitionKey = 'username';
@@ -35,10 +31,7 @@ const updateUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<Updat
   logger.debug('userParams:', userParams);
   logger.debug('isValid:', isValid);
 
-  if (!isValid) {
-    logger.debug('updateUser input was not valid. Throwing an error.');
-    throwValidationError(validateUpdateUser.errors);
-  }
+  if (!isValid) throwValidationError(validateUpdateUser.errors);
 
   const {
     input
@@ -54,18 +47,11 @@ const updateUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<Updat
   };
   logger.debug('queryOptions:', queryOptions);
 
-  const itemQuery = await docClient.query(queryOptions)
-    .catch(err => {
-      logger.debug('docClient query operation failed with error:', err);
-      throwUnknownError(err);
-    });
+  const itemQuery = await docClient.query(queryOptions);
 
   logger.debug('itemQuery:', itemQuery);
 
-  if (itemQuery.Count === 0) {
-    logger.debug('itemQuery returned 0 items. Throwing an error.');
-    throwNotFoundError(username);
-  }
+  if (itemQuery.Count === 0) throwNotFoundError(`User ${username} not found`);
 
   let UpdateExpression = 'SET ';
   const ExpressionAttributeValues: { [key: string]: string | UpdateUserAddress; } = {};
@@ -90,18 +76,9 @@ const updateUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<Updat
   };
   logger.debug(docClientUpdateOptions);
 
-  const dynamoResponse = await docClient.update(docClientUpdateOptions)
-    .catch(err => {
-      logger.debug('docClient update operation failed with error:', err);
-      throwUnknownError(err);
-    });
+  const { Attributes } = await docClient.update(docClientUpdateOptions);
 
-  logger.debug('dynamoResponse:', dynamoResponse);
-
-  return {
-    success: true,
-    user: dynamoResponse.Attributes as DynamoUserItem
-  };
+  return Attributes as DynamoUserItem;
 };
 
 export async function handler(event: APIGatewayProxyEvent) {

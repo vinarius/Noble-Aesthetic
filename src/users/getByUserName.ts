@@ -1,16 +1,12 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument, QueryCommandInput } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
+import { throwNotFoundError } from '../../lib/errors';
 import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { HandlerResponse } from '../../models/response';
 import { DynamoUserItem } from '../../models/user';
-
-interface GetUserByIdResponse extends HandlerResponse {
-  user: DynamoUserItem;
-}
 
 const {
   usersTableName = ''
@@ -20,7 +16,7 @@ const logger = LoggerFactory.getLogger();
 const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
 
-const getUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<GetUserByIdResponse> => {
+const getUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<DynamoUserItem> => {
   validateEnvVars(['usersTableName']);
 
   const partitionKey = 'username';
@@ -41,26 +37,12 @@ const getUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<GetUserB
   };
   logger.debug('queryOptions:', queryOptions);
 
-  const detailsQuery = await docClient.query(queryOptions)
-    .catch(err => {
-      logger.debug('docClient query failed with error:', err);
-      throwUnknownError(err);
-    });
-
+  const detailsQuery = await docClient.query(queryOptions);
   logger.debug('detailsQuery:', detailsQuery);
 
-  if (detailsQuery.Count === 0) {
-    logger.debug('detailsQuery returned 0 items. Throwing an error.');
-    throwNotFoundError(username);
-  }
+  if (detailsQuery.Count === 0) throwNotFoundError(`User ${username} not found`);
 
-  const user = detailsQuery.Items?.[0] as DynamoUserItem;
-  logger.debug('user:', user);
-
-  return {
-    success: true,
-    user
-  };
+  return detailsQuery.Items?.[0] as DynamoUserItem;
 };
 
 export async function handler(event: APIGatewayProxyEvent) {

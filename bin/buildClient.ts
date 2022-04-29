@@ -21,8 +21,8 @@ async function setEnvVars(): Promise<void> {
       rmSync(envFilePath);
 
     writeFileSync(envFilePath, `NEXT_PUBLIC_STAGE=${stage}`);
-
-    const outputsPath = resolveFromRoot(isStagingEnv ? `cdk-outputs-${stage}.json` : 'dist', `cdk-outputs-${stage}.json`);
+    const input = isStagingEnv ? [`cdk-outputs-${stage}.json`] : ['dist', `cdk-outputs-${stage}.json`];
+    const outputsPath = resolveFromRoot(...input);
     const cdkOutputsRaw = JSON.parse(readFileSync(outputsPath).toString());
     const webAppClientId = cdkOutputsRaw[`${project}-usersStack-${stage}`][`${project}webAppClientIdOutput${stage.replace(/\W/g, '')}`];
     const apiUrl = cdkOutputsRaw[`${project}-apiStack-${stage}`][`${project}apiUrlOutput${stage.replace(/\W/g, '')}`];

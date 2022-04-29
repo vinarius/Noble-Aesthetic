@@ -2,11 +2,11 @@ import { AdminDeleteUserCommand, CognitoIdentityProviderClient } from '@aws-sdk/
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
+import { throwNotFoundError, throwUnknownError } from '../../lib/errors';
 import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { HandlerResponse } from '../../models/response';
 
 const {
   usersTableName = '',
@@ -18,7 +18,7 @@ const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
-const adminDeleteUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<HandlerResponse> => {
+const adminDeleteUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<void> => {
   validateEnvVars(['usersTableName', 'userPoolId']);
 
   const partitionKey = 'username';
@@ -38,7 +38,7 @@ const adminDeleteUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<
     }
   });
 
-  if (itemQuery.Count === 0) throwNotFoundError(username);
+  if (itemQuery.Count === 0) throwNotFoundError(`User ${username} not found`);
 
   const originalDynamoItem = await docClient.delete({
     Key: { username },
@@ -57,10 +57,6 @@ const adminDeleteUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<
 
     throwUnknownError(error);
   });
-
-  return {
-    success: true
-  };
 };
 
 export async function handler(event: APIGatewayProxyEvent) {

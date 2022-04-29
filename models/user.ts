@@ -49,14 +49,12 @@ export interface ConfirmSignUpUserReqBody {
 export interface DynamoUserItem {
   username: string;
   dataKey: string;
-  address: {
-    line1: string;
-    line2: string;
-    city: string;
-    state: string;
-    zip: string;
-    country: string;
-  };
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
   birthdate: string;
   firstName: string;
   gender: 'M' | 'F' | '';
@@ -536,19 +534,12 @@ const updateUserSchema: Schema = {
         phoneNumber: { type: jsonType.STRING },
         firstName: { type: jsonType.STRING },
         lastName: { type: jsonType.STRING },
-        address: {
-          type: jsonType.OBJECT,
-          additionalProperties: false,
-          required: [],
-          properties: {
-            line1: { type: jsonType.STRING },
-            line2: { type: jsonType.STRING },
-            city: { type: jsonType.STRING },
-            state: { type: jsonType.STRING },
-            zip: { type: jsonType.STRING },
-            country: { type: jsonType.STRING }
-          }
-        }
+        addressLine1: { type: jsonType.STRING },
+        addressLine2: { type: jsonType.STRING },
+        city: { type: jsonType.STRING },
+        state: { type: jsonType.STRING },
+        zip: { type: jsonType.STRING },
+        country: { type: jsonType.STRING }
       }
     }
   }

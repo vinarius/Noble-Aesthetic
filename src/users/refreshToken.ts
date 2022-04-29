@@ -1,13 +1,13 @@
 import { CognitoIdentityProviderClient, InitiateAuthCommandOutput } from '@aws-sdk/client-cognito-identity-provider';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { refreshUserToken } from '../../lib/cognito';
+import { throwValidationError } from '../../lib/errors';
 import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
-import { HandlerResponse } from '../../models/response';
 import { RefreshTokenReqBody, validateRefreshToken } from '../../models/user';
 
-interface RefreshTokenResponse extends HandlerResponse {
+interface RefreshTokenResponse {
   details: InitiateAuthCommandOutput;
 }
 
@@ -21,26 +21,16 @@ const refreshTokenHandler = async (event: APIGatewayProxyEvent): Promise<Refresh
   logger.debug('params:', params);
   logger.debug('isValid:', isValid);
 
-  if (!isValid) {
-    logger.debug('refreshToken input was not valid. Throwing an error.');
-    throwValidationError(validateRefreshToken.errors);
-  }
+  if (!isValid) throwValidationError(validateRefreshToken.errors);
 
   const {
     refreshToken,
     appClientId
   } = params.input;
 
-  const details = await refreshUserToken(cognitoClient, appClientId, refreshToken)
-    .catch(err => {
-      logger.debug('refreshUserToken operation failed with error:', err);
-      throwUnknownError(err);
-    });
-
-  logger.debug('details:', details);
+  const details = await refreshUserToken(cognitoClient, appClientId, refreshToken);
 
   return {
-    success: true,
     details
   };
 };

@@ -24,6 +24,8 @@ export async function setDefaultProps(
     delete response.customHeaders;
     delete response.success;
 
+    console.log('testing lambda response:', response);
+
     return {
       statusCode: 200,
       headers: customHeaders ?? headers,
@@ -33,7 +35,11 @@ export async function setDefaultProps(
       })
     };
   } catch (error: any) {
-    logger.warn(typeof error === 'string' ? error : JSON.stringify(error));
+    console.log('testing lambda error:', error);
+
+    // TODO: fix error handling
+
+    logger.warn(error);
 
     return {
       statusCode: error.statusCode ?? error.$metadata?.httpStatusCode ?? 500,

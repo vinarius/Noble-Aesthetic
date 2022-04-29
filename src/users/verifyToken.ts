@@ -1,6 +1,8 @@
 import { CognitoJwtVerifier } from 'aws-jwt-verify';
+import { CognitoAccessTokenPayload } from 'aws-jwt-verify/dist/cjs/jwt-model';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { DateTime } from 'luxon';
+import { throwNotAuthorizedError, throwValidationError } from '../../lib/errors';
 import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { validateEnvVars } from '../../lib/validateEnvVars';
@@ -22,10 +24,7 @@ const verifyTokenHandler = async (event: APIGatewayProxyEvent): Promise<HandlerR
   logger.debug('params:', params);
   logger.debug('isValid:', isValid);
 
-  if (!isValid) {
-    logger.debug('verifyToken input was not valid. Throwing an error.');
-    throwValidationError(validateVerifyToken.errors);
-  }
+  if (!isValid) throwValidationError(validateVerifyToken.errors);
 
   const {
     accessToken,
@@ -40,11 +39,13 @@ const verifyTokenHandler = async (event: APIGatewayProxyEvent): Promise<HandlerR
 
   logger.debug('verifier:', verifier);
 
-  const { exp } = await verifier.verify(accessToken)
+  const verifyResponse = await verifier.verify(accessToken)
     .catch(error => {
       logger.debug('verify error:', error);
       throwNotAuthorizedError('Invalid access token');
     });
+
+  const { exp } = verifyResponse as CognitoAccessTokenPayload;
 
   logger.debug('exp:', exp);
 

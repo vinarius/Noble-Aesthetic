@@ -25,7 +25,7 @@ const getUsersHandler = async (event: APIGatewayProxyEvent): Promise<GetUsersRes
   validateEnvVars(['usersTableName']);
 
   return {
-    users: await scan(docClient, usersTableName) as DynamoUserItem[]
+    users: await scan(docClient, usersTableName) as DynamoUserItem[] // TODO: fix this
   };
 };
 

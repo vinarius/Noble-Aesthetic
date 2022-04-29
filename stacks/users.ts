@@ -56,7 +56,7 @@ export class UsersStack extends Stack {
       },
       userVerification: {
         emailSubject: 'Your Noble Aesthetic Account',
-        emailBody: 'Welcome to your Noble Aesthetic account. Your username is {username} and temporary password is {####}'
+        emailBody: 'Welcome to your Noble Aesthetic account. Your temporary password is {####}'
       },
       userPoolName: `${project}-${stack}-pool-${stage}`,
       removalPolicy
@@ -99,6 +99,7 @@ export class UsersStack extends Stack {
      * DynamoDB Section
      */
     const usersTable = new Table(this, `${project}-${stack}-table-${stage}`, {
+      tableName: `${project}-${stack}-${stage}`,
       partitionKey: {
         name: 'username',
         type: AttributeType.STRING
@@ -475,6 +476,10 @@ export class UsersStack extends Stack {
       const nodeLambda = new NodeLambda(this, `${project}-${stack}-${name}-${stage}`, {
         ...definition,
         runtime: Runtime.NODEJS_14_X,
+        environment: {
+          ...definition.environment,
+          LOGGING_LEVEL: stage === 'prod' ? 'WARN' : 'DEBUG'
+        },
         functionName: `${project}-${stack}-${name}-${stage}`,
         entry: resolve(__dirname, '..', 'src', stack, `${name}.ts`),
         bundling: {

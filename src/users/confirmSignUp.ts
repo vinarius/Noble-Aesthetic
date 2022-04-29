@@ -4,12 +4,11 @@ import { DynamoDBDocument, PutCommandInput } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { DateTime } from 'luxon';
 import { adminDeleteUserByUserName, confirmSignUp } from '../../lib/cognito';
+import { throwNotAuthorizedError, throwUnknownError, throwValidationError } from '../../lib/errors';
 import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { buildNotAuthorizedError, buildUnknownError } from '../../models/errors';
-import { HandlerResponse } from '../../models/response';
 import { ConfirmSignUpUserReqBody, DynamoUserItem, validateConfirmSignUpUser } from '../../models/user';
 
 const {
@@ -21,14 +20,12 @@ const {
 export const newUser: DynamoUserItem = {
   username: '',
   dataKey: 'details',
-  address: {
-    line1: '',
-    line2: '',
-    city: '',
-    state: '',
-    zip: '',
-    country: ''
-  },
+  addressLine1: '',
+  addressLine2: '',
+  city: '',
+  state: '',
+  zip: '',
+  country: '',
   birthdate: '',
   firstName: '',
   gender: '',
@@ -41,7 +38,7 @@ const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
-const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<HandlerResponse> => {
+const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<void> => {
   validateEnvVars([
     'usersTableName',
     'userPoolId',
@@ -56,10 +53,7 @@ const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<Handle
   logger.debug('validClientIds:', validClientIds);
   logger.debug('isValid:', isValid);
 
-  if (!isValid) {
-    logger.debug('confirmSignUpUser input was not valid. Throwing an error.');
-    throwValidationError(validateConfirmSignUpUser.errors);
-  }
+  if (!isValid) throwValidationError(validateConfirmSignUpUser.errors);
 
   const {
     appClientId,
@@ -67,19 +61,16 @@ const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<Handle
     confirmationCode
   } = params.input;
 
-  if (!validClientIds.includes(appClientId)) {
-    logger.debug('validClientIds does not include appClientId. Throwing an error.');
-    throwNotAuthorizedError(`Appclient ID '${appClientId}' is Invalid`);
-  }
+  if (!validClientIds.includes(appClientId)) throwNotAuthorizedError(`Appclient ID '${appClientId}' is Invalid`);
 
   const confirmSignUpResponse = await confirmSignUp(cognitoClient, appClientId, username, confirmationCode)
     .catch(err => {
       logger.debug('confirmSignUp operation failed with error:', err);
-      throw err.name === 'CodeMismatchException' ? buildNotAuthorizedError('Code entered is invalid') : buildUnknownError(err);
+      err.name === 'CodeMismatchException' ? throwNotAuthorizedError('Code entered is invalid') : throwUnknownError(err);
     });
   logger.debug('confirmSignUpResponse:', confirmSignUpResponse);
 
-  const timestamp = DateTime.now().toUTC().toFormat('MM/dd/yyyy\'T\'HH:mm:ss.SSS\'Z\'');
+  const timestamp = DateTime.now().toUTC().toISO();
   logger.debug('timestamp:', timestamp);
 
   newUser.username = username;
@@ -90,19 +81,13 @@ const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<Handle
   };
   logger.debug('putOptions:', putOptions);
 
-  const putResponse = await docClient.put(putOptions)
+  await docClient.put(putOptions)
     .catch(async (error) => {
       logger.debug('putResponse operation failed with error:', error);
       const adminDeleteUserByUserNameResponse = await adminDeleteUserByUserName(cognitoClient, userPoolId, username);
       logger.debug('adminDeleteUserByUserNameResponse:', adminDeleteUserByUserNameResponse);
       throwUnknownError(error);
     });
-
-  logger.debug('putResponse:', putResponse);
-
-  return {
-    success: true
-  };
 };
 
 export async function handler(event: APIGatewayProxyEvent) {
