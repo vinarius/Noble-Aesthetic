@@ -4,7 +4,7 @@ import { changePassword } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
-import { buildNotAuthorizedError, buildUnknownError, buildValidationError } from '../../models/error';
+import { buildNotAuthorizedError, buildUnknownError } from '../../models/errors';
 import { HandlerResponse } from '../../models/response';
 import { ChangePasswordReqBody, validateChangePassword } from '../../models/user';
 
@@ -20,7 +20,7 @@ const changePasswordHandler = async (event: APIGatewayProxyEvent): Promise<Handl
 
   if (!isValid) {
     logger.debug('changePassword input was not valid. Throwing an error.');
-    throw buildValidationError(validateChangePassword.errors);
+    throwValidationError(validateChangePassword.errors);
   }
 
   const {

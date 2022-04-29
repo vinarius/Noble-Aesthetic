@@ -8,17 +8,12 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { adminDeleteUserByUserName } from '../../lib/cognito';
+import { throwResourceExistsError, throwUnknownError, throwValidationError } from '../../lib/errors';
 import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { buildResourceExistsError, buildUnknownError, buildValidationError } from '../../models/error';
-import { HandlerResponse } from '../../models/response';
 import { DynamoUserItem, validateAdminCreateUser } from '../../models/user';
-
-interface CreateUserResponse extends HandlerResponse {
-  user?: DynamoUserItem;
-}
 
 const {
   usersTableName = '',
@@ -30,7 +25,7 @@ const dynamoClient = new DynamoDBClient({ ...retryOptions });
 const docClient = DynamoDBDocument.from(dynamoClient);
 const cognitoClient = new CognitoIdentityProviderClient({ ...retryOptions });
 
-const adminCreateUserHandler = async (event: APIGatewayProxyEvent): Promise<CreateUserResponse> => {
+const adminCreateUserHandler = async (event: APIGatewayProxyEvent): Promise<DynamoUserItem> => {
   validateEnvVars(['usersTableName', 'userPoolId']);
 
   const partitionKey = 'username';
@@ -45,7 +40,7 @@ const adminCreateUserHandler = async (event: APIGatewayProxyEvent): Promise<Crea
 
   if (!isValid) {
     logger.debug('adminCreateUser input was not valid. Throwing an error.');
-    throw buildValidationError(validateAdminCreateUser.errors);
+    throwValidationError(validateAdminCreateUser.errors);
   }
 
   const {
@@ -62,10 +57,7 @@ const adminCreateUserHandler = async (event: APIGatewayProxyEvent): Promise<Crea
     }
   });
 
-  if (userNameTaken.Count! > 0) {
-    logger.debug('username is already taken. Throwing an error.');
-    throw buildResourceExistsError(username);
-  }
+  if (userNameTaken.Count! > 0) throwResourceExistsError(username);
 
   const createCognitoUserCommand = new AdminCreateUserCommand({
     UserPoolId: userPoolId,
@@ -106,13 +98,10 @@ const adminCreateUserHandler = async (event: APIGatewayProxyEvent): Promise<Crea
     ReturnValues: 'ALL_NEW'
   }).catch(async error => {
     await adminDeleteUserByUserName(cognitoClient, userPoolId, Username!);
-    throw buildUnknownError(error);
+    throwUnknownError(error);
   });
 
-  return {
-    success: true,
-    user: dynamoResponse.Attributes as DynamoUserItem
-  };
+  return dynamoResponse.Attributes as DynamoUserItem;
 };
 
 export async function handler(event: APIGatewayProxyEvent) {

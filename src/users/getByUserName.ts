@@ -5,7 +5,6 @@ import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { buildNotFoundError, buildUnknownError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { DynamoUserItem } from '../../models/user';
 
@@ -45,14 +44,14 @@ const getUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<GetUserB
   const detailsQuery = await docClient.query(queryOptions)
     .catch(err => {
       logger.debug('docClient query failed with error:', err);
-      throw buildUnknownError(err);
+      throwUnknownError(err);
     });
 
   logger.debug('detailsQuery:', detailsQuery);
 
   if (detailsQuery.Count === 0) {
     logger.debug('detailsQuery returned 0 items. Throwing an error.');
-    throw buildNotFoundError(username);
+    throwNotFoundError(username);
   }
 
   const user = detailsQuery.Items?.[0] as DynamoUserItem;

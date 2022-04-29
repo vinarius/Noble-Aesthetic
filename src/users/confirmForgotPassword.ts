@@ -5,7 +5,6 @@ import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { buildNotAuthorizedError, buildUnknownError, buildValidationError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { ConfirmForgotPasswordReqBody, validateConfirmForgotPassword } from '../../models/user';
 
@@ -29,7 +28,7 @@ const confirmForgotPasswordHandler = async (event: APIGatewayProxyEvent): Promis
 
   if (!isValid) {
     logger.debug('confirmForgotPassword input was not valid. Throwing an error.');
-    throw buildValidationError(validateConfirmForgotPassword.errors);
+    throwValidationError(validateConfirmForgotPassword.errors);
   }
 
   const {
@@ -41,7 +40,7 @@ const confirmForgotPasswordHandler = async (event: APIGatewayProxyEvent): Promis
 
   if (!validClientIds.includes(appClientId)) {
     logger.debug('validClientIds does not include appClientId');
-    throw buildNotAuthorizedError(`Appclient ID '${appClientId}' is invalid`);
+    throwNotAuthorizedError(`Appclient ID '${appClientId}' is invalid`);
   }
 
   const confirmForgotPasswordResponse = await confirmForgotPassword(
@@ -52,7 +51,7 @@ const confirmForgotPasswordHandler = async (event: APIGatewayProxyEvent): Promis
     confirmationCode
   ).catch(err => {
     logger.debug('confirmForgotPassword operation failed with error:', err);
-    throw buildUnknownError(err);
+    throwUnknownError(err);
   });
 
   logger.debug('confirmForgotPasswordResponse:', confirmForgotPasswordResponse);

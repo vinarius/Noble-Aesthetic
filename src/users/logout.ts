@@ -4,7 +4,7 @@ import { logout } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
-import { buildNotAuthorizedError, buildUnknownError, buildValidationError } from '../../models/error';
+import { buildNotAuthorizedError, buildUnknownError } from '../../models/errors';
 import { HandlerResponse } from '../../models/response';
 import { LogoutReqBody, validateLogout } from '../../models/user';
 
@@ -24,7 +24,7 @@ const logoutHandler = async (event: APIGatewayProxyEvent): Promise<LogoutRespons
 
   if (!isValid) {
     logger.debug('logout input was not valid. Throwing an error.');
-    throw buildValidationError(validateLogout.errors);
+    throwValidationError(validateLogout.errors);
   }
 
   const {

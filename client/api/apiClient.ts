@@ -11,7 +11,7 @@ export class ApiClient {
 
   constructor() {
     this.client = axios.create({
-      baseURL: stage === 'prod' || stage === 'dev' ? `https://${apiDomainName}/` : apiDomainName,
+      baseURL: apiDomainName,
       headers: { Accept: '*/*' }
     });
 

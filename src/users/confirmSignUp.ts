@@ -8,7 +8,7 @@ import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { buildNotAuthorizedError, buildUnknownError, buildValidationError } from '../../models/error';
+import { buildNotAuthorizedError, buildUnknownError } from '../../models/errors';
 import { HandlerResponse } from '../../models/response';
 import { ConfirmSignUpUserReqBody, DynamoUserItem, validateConfirmSignUpUser } from '../../models/user';
 
@@ -58,7 +58,7 @@ const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<Handle
 
   if (!isValid) {
     logger.debug('confirmSignUpUser input was not valid. Throwing an error.');
-    throw buildValidationError(validateConfirmSignUpUser.errors);
+    throwValidationError(validateConfirmSignUpUser.errors);
   }
 
   const {
@@ -69,7 +69,7 @@ const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<Handle
 
   if (!validClientIds.includes(appClientId)) {
     logger.debug('validClientIds does not include appClientId. Throwing an error.');
-    throw buildNotAuthorizedError(`Appclient ID '${appClientId}' is Invalid`);
+    throwNotAuthorizedError(`Appclient ID '${appClientId}' is Invalid`);
   }
 
   const confirmSignUpResponse = await confirmSignUp(cognitoClient, appClientId, username, confirmationCode)
@@ -95,7 +95,7 @@ const confirmSignUpHandler = async (event: APIGatewayProxyEvent): Promise<Handle
       logger.debug('putResponse operation failed with error:', error);
       const adminDeleteUserByUserNameResponse = await adminDeleteUserByUserName(cognitoClient, userPoolId, username);
       logger.debug('adminDeleteUserByUserNameResponse:', adminDeleteUserByUserNameResponse);
-      throw buildUnknownError(error);
+      throwUnknownError(error);
     });
 
   logger.debug('putResponse:', putResponse);

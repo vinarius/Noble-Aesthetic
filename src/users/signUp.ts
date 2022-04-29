@@ -5,7 +5,6 @@ import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { buildNotAuthorizedError, buildUnknownError, buildValidationError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { SignUpUserReqBody, validateSignUpUser } from '../../models/user';
 
@@ -33,7 +32,7 @@ const signUpHandler = async (event: APIGatewayProxyEvent): Promise<SignUpRespons
 
   if (!isValid) {
     logger.debug('signUpUser input was not valid. Throwing an error.');
-    throw buildValidationError(validateSignUpUser.errors);
+    throwValidationError(validateSignUpUser.errors);
   }
 
   const {
@@ -44,13 +43,13 @@ const signUpHandler = async (event: APIGatewayProxyEvent): Promise<SignUpRespons
 
   if (!validClientIds.includes(appClientId)) {
     logger.debug('validClientIds does not include appClientId. Throwing an error.');
-    throw buildNotAuthorizedError(`Appclient ID '${appClientId}' is Invalid`);
+    throwNotAuthorizedError(`Appclient ID '${appClientId}' is Invalid`);
   }
 
   const details: SignUpCommandOutput = await signUp(cognitoClient, appClientId, username, password)
     .catch(err => {
       logger.debug('signUp operation failed with error:', err);
-      throw buildUnknownError(err);
+      throwUnknownError(err);
     });
 
   logger.debug('details:', details);

@@ -6,7 +6,6 @@ import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { buildNotFoundError, buildUnknownError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 
 const {
@@ -39,7 +38,7 @@ const adminDeleteUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<
     }
   });
 
-  if (itemQuery.Count === 0) throw buildNotFoundError(username);
+  if (itemQuery.Count === 0) throwNotFoundError(username);
 
   const originalDynamoItem = await docClient.delete({
     Key: { username },
@@ -56,7 +55,7 @@ const adminDeleteUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<
       Item: originalDynamoItem.Attributes
     });
 
-    throw buildUnknownError(error);
+    throwUnknownError(error);
   });
 
   return {

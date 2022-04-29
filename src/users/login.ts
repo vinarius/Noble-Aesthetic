@@ -7,7 +7,7 @@ import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { buildNotAuthorizedError, buildNotFoundError, buildUnknownError, buildValidationError } from '../../models/error';
+import { buildNotAuthorizedError, buildUnknownError } from '../../models/errors';
 import { HandlerResponse } from '../../models/response';
 import { DynamoUserItem, LoginReqBody, validateLogin } from '../../models/user';
 
@@ -48,7 +48,7 @@ const loginHandler = async (event: APIGatewayProxyEvent): Promise<LoginResponse>
 
   if (!isValid) {
     logger.debug('login input was not valid. Throwing an error.');
-    throw buildValidationError(validateLogin.errors);
+    throwValidationError(validateLogin.errors);
   }
 
   const {
@@ -59,7 +59,7 @@ const loginHandler = async (event: APIGatewayProxyEvent): Promise<LoginResponse>
 
   if (!validClientIds.includes(appClientId)) {
     logger.debug('validClientIds does not include appClientId. Throwing an error.');
-    throw buildNotAuthorizedError(`Appclient ID '${appClientId}' is Invalid`);
+    throwNotAuthorizedError(`Appclient ID '${appClientId}' is Invalid`);
   }
 
   const result: InitiateAuthCommandOutput = await login(cognitoClient, appClientId, username, password)
@@ -83,14 +83,14 @@ const loginHandler = async (event: APIGatewayProxyEvent): Promise<LoginResponse>
   const itemQuery = await docClient.query(queryOptions)
     .catch(err => {
       logger.debug('docClient query operation failed with error:', err);
-      throw buildUnknownError(err);
+      throwUnknownError(err);
     });
 
   logger.debug('itemQuery:', itemQuery);
 
   if (itemQuery.Count === 0) {
     logger.debug('itemQuery returned 0 items. Throwing an error.');
-    throw buildNotFoundError(username);
+    throwNotFoundError(username);
   }
 
   const user = itemQuery.Items?.[0] as DynamoUserItem;

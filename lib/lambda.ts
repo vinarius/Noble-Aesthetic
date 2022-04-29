@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { APIGatewayProxyEvent } from 'aws-lambda';
 
-const headers = {
+import { LoggerFactory } from '../lib/loggerFactory';
+
+export const headers = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': '*',
@@ -9,39 +10,38 @@ const headers = {
   'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,OPTIONS'
 };
 
+const logger = LoggerFactory.getLogger();
+
 export async function setDefaultProps(
-  event: APIGatewayProxyEvent,
+  event: any,
   handler: any,
-  context?: any,
-  customHeaders?: any
+  context?: any
 ): Promise<any> {
   try {
-    const response = await handler(event, context);
+    const response = await handler(event, context) ?? {};
+    const customHeaders = response.customHeaders;
+    const customSuccess = response.success;
+    delete response.customHeaders;
+    delete response.success;
+
     return {
       statusCode: 200,
       headers: customHeaders ?? headers,
-      body: typeof response === 'string' ? response : JSON.stringify(response)
+      body: JSON.stringify({
+        success: customSuccess ?? true,
+        ...Object.keys(response).length > 0 && { payload: response }
+      })
     };
   } catch (error: any) {
-    console.error(error);
-
-    const errorTemplate = {
-      success: false,
-      error: ''
-    };
-
-    if (error instanceof Error) {
-      errorTemplate.error = `${error.name && `${error.name}: `}${error.message}`;
-    }
-
-    const body = typeof error === 'string' ? error :
-      error instanceof Error ? JSON.stringify(errorTemplate) :
-        JSON.stringify(error);
+    logger.warn(typeof error === 'string' ? error : JSON.stringify(error));
 
     return {
-      statusCode: error.statusCode ?? 500,
+      statusCode: error.statusCode ?? error.$metadata?.httpStatusCode ?? 500,
       headers,
-      body
+      body: JSON.stringify({
+        ...error,
+        success: false
+      })
     };
   }
 }

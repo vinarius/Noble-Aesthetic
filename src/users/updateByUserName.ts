@@ -5,7 +5,6 @@ import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { buildNotFoundError, buildUnknownError, buildValidationError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { DynamoUserItem, UpdateUserAddress, UpdateUserItem, validateUpdateUser } from '../../models/user';
 
@@ -38,7 +37,7 @@ const updateUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<Updat
 
   if (!isValid) {
     logger.debug('updateUser input was not valid. Throwing an error.');
-    throw buildValidationError(validateUpdateUser.errors);
+    throwValidationError(validateUpdateUser.errors);
   }
 
   const {
@@ -58,14 +57,14 @@ const updateUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<Updat
   const itemQuery = await docClient.query(queryOptions)
     .catch(err => {
       logger.debug('docClient query operation failed with error:', err);
-      throw buildUnknownError(err);
+      throwUnknownError(err);
     });
 
   logger.debug('itemQuery:', itemQuery);
 
   if (itemQuery.Count === 0) {
     logger.debug('itemQuery returned 0 items. Throwing an error.');
-    throw buildNotFoundError(username);
+    throwNotFoundError(username);
   }
 
   let UpdateExpression = 'SET ';
@@ -94,7 +93,7 @@ const updateUserByIdHandler = async (event: APIGatewayProxyEvent): Promise<Updat
   const dynamoResponse = await docClient.update(docClientUpdateOptions)
     .catch(err => {
       logger.debug('docClient update operation failed with error:', err);
-      throw buildUnknownError(err);
+      throwUnknownError(err);
     });
 
   logger.debug('dynamoResponse:', dynamoResponse);

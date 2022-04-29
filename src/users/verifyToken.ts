@@ -4,7 +4,6 @@ import { DateTime } from 'luxon';
 import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { buildNotAuthorizedError, buildValidationError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { validateVerifyToken, VerifyTokenReqBody } from '../../models/user';
 
@@ -25,7 +24,7 @@ const verifyTokenHandler = async (event: APIGatewayProxyEvent): Promise<HandlerR
 
   if (!isValid) {
     logger.debug('verifyToken input was not valid. Throwing an error.');
-    throw buildValidationError(validateVerifyToken.errors);
+    throwValidationError(validateVerifyToken.errors);
   }
 
   const {
@@ -44,7 +43,7 @@ const verifyTokenHandler = async (event: APIGatewayProxyEvent): Promise<HandlerR
   const { exp } = await verifier.verify(accessToken)
     .catch(error => {
       logger.debug('verify error:', error);
-      throw buildNotAuthorizedError('Invalid access token');
+      throwNotAuthorizedError('Invalid access token');
     });
 
   logger.debug('exp:', exp);

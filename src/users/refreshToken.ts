@@ -4,7 +4,6 @@ import { refreshUserToken } from '../../lib/cognito';
 import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
-import { buildUnknownError, buildValidationError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { RefreshTokenReqBody, validateRefreshToken } from '../../models/user';
 
@@ -24,7 +23,7 @@ const refreshTokenHandler = async (event: APIGatewayProxyEvent): Promise<Refresh
 
   if (!isValid) {
     logger.debug('refreshToken input was not valid. Throwing an error.');
-    throw buildValidationError(validateRefreshToken.errors);
+    throwValidationError(validateRefreshToken.errors);
   }
 
   const {
@@ -35,7 +34,7 @@ const refreshTokenHandler = async (event: APIGatewayProxyEvent): Promise<Refresh
   const details = await refreshUserToken(cognitoClient, appClientId, refreshToken)
     .catch(err => {
       logger.debug('refreshUserToken operation failed with error:', err);
-      throw buildUnknownError(err);
+      throwUnknownError(err);
     });
 
   logger.debug('details:', details);

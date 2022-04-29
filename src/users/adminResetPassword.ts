@@ -7,7 +7,6 @@ import { setDefaultProps } from '../../lib/lambda';
 import { LoggerFactory } from '../../lib/loggerFactory';
 import { retryOptions } from '../../lib/retryOptions';
 import { validateEnvVars } from '../../lib/validateEnvVars';
-import { buildNotFoundError, buildValidationError } from '../../models/error';
 import { HandlerResponse } from '../../models/response';
 import { AdminResetUserPasswordReqBody, validateAdminResetPassword } from '../../models/user';
 
@@ -34,7 +33,7 @@ const adminResetPasswordHandler = async (event: APIGatewayProxyEvent): Promise<H
   logger.debug('userParams:', userParams);
   logger.debug('isValid:', isValid);
 
-  if (!isValid) throw buildValidationError(validateAdminResetPassword.errors);
+  if (!isValid) throwValidationError(validateAdminResetPassword.errors);
 
   const { username } = userParams.input;
 
@@ -47,7 +46,7 @@ const adminResetPasswordHandler = async (event: APIGatewayProxyEvent): Promise<H
     }
   });
 
-  if (itemQuery.Count === 0) throw buildNotFoundError(username);
+  if (itemQuery.Count === 0) throwNotFoundError(username);
 
   await adminResetUserPassword(cognitoClient, userPoolId, username);
 
