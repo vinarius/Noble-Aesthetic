@@ -6,14 +6,12 @@ interface UserState {
   phoneNumber: string;
   birthdate: string;
   lastName: string;
-  address: {
-    zip: string;
-    country: string;
-    state: string;
-    line2: string;
-    city: string;
-    line1: string;
-  },
+  zip: string;
+  country: string;
+  state: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
   firstName: string;
   gender: string;
 }
@@ -24,14 +22,12 @@ const initialState: UserState = {
   phoneNumber: '',
   birthdate: '',
   lastName: '',
-  address: {
-    zip: '',
-    country: '',
-    state: '',
-    line2: '',
-    city: '',
-    line1: ''
-  },
+  zip: '',
+  country: '',
+  state: '',
+  addressLine1: '',
+  addressLine2: '',
+  city: '',
   firstName: '',
   gender: ''
 };

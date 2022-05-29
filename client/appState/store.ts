@@ -2,12 +2,28 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { createLogger } from 'redux-logger';
 import { persistReducer, persistStore } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
+import createWebStorage from 'redux-persist/lib/storage/createWebStorage';
 import { stage } from '../getConfig';
 import { authSlice } from './slices/auth';
 import { userSlice } from './slices/user';
 
 const middleware = [];
+
+const createNoopStorage = () => {
+  return {
+    getItem(_key: any) {
+      return Promise.resolve(null);
+    },
+    setItem(_key: any, value: any) {
+      return Promise.resolve(value);
+    },
+    removeItem(_key: any) {
+      return Promise.resolve();
+    },
+  };
+};
+
+const storage = typeof window !== 'undefined' ? createWebStorage('local') : createNoopStorage();
 
 // Logger must be last in middleware chain to properly resolve promises.
 if (stage !== 'prod') {

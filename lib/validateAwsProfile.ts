@@ -1,12 +1,10 @@
 import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
 import { fromIni } from '@aws-sdk/credential-provider-ini';
-
 import { retryOptions } from './retryOptions';
+
 
 export async function validateAwsProfile(profile: string): Promise<void> {
   const { IS_JEST } = process.env;
-  
-  console.log(`>>> Using profile ${profile}`);
 
   try {
     const stsClient = new STSClient({
@@ -27,8 +25,6 @@ export async function validateAwsProfile(profile: string): Promise<void> {
         throw error;
       }
     });
-
-    console.log(`>>> Profile ${profile} session is valid\n`);
   } catch (error) {
     const { name, message } = error as Error;
     console.error(`${name}: ${message}`);

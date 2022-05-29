@@ -1,6 +1,6 @@
 import { Aws, Stack } from 'aws-cdk-lib';
 import { EventAction, FilterGroup, LinuxBuildImage, Project, Source } from 'aws-cdk-lib/aws-codebuild';
-import { Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { repo } from '../config';
@@ -17,6 +17,8 @@ export class CICDStack extends Stack {
       branch,
       stack
     } = props;
+
+    const { PARTITION, ACCOUNT_ID } = Aws;
 
     const hostBucketArn = StringParameter.fromStringParameterName(this, `${project}-${stack}-hostBucketArnParam-${stage}`, `/${project}/webhost/hostbucketArn/${stage}`).stringValue;
     const siteDistributionId = StringParameter.fromStringParameterName(this, `${project}-${stack}-siteDistributionIdParam-${stage}`, `/${project}/webhost/siteDistributionId/${stage}`).stringValue;
@@ -54,14 +56,12 @@ export class CICDStack extends Stack {
           [project]: new PolicyDocument({
             statements: [
               new PolicyStatement({
-                effect: Effect.ALLOW,
                 actions: ['sts:assumeRole'],
                 resources: [
-                  `arn:${Aws.PARTITION}:iam::${Aws.ACCOUNT_ID}:role/cdk-hnb659fds-*`
+                  `arn:${PARTITION}:iam::${ACCOUNT_ID}:role/cdk-hnb659fds-*`
                 ]
               }),
               new PolicyStatement({
-                effect: Effect.ALLOW,
                 actions: ['s3:*'],
                 resources: [
                   hostBucketArn,
@@ -69,10 +69,9 @@ export class CICDStack extends Stack {
                 ]
               }),
               new PolicyStatement({
-                effect: Effect.ALLOW,
                 actions: ['cloudfront:CreateInvalidation'],
                 resources: [
-                  `arn:${Aws.PARTITION}:cloudfront::${Aws.ACCOUNT_ID}:distribution/${siteDistributionId}`
+                  `arn:${PARTITION}:cloudfront::${ACCOUNT_ID}:distribution/${siteDistributionId}`
                 ]
               })
             ]

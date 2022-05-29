@@ -13,8 +13,6 @@ export default function Login(): ReactElement {
   const [isInvalidLogin, setIsInvalidLogin] = useState<boolean>(false);
   const dispatch = useAppDispatch();
 
-
-
   const handleSubmitLogin = async (event: FormEvent) => {
     event.preventDefault();
     setIsLoggingIn(true);

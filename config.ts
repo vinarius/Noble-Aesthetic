@@ -19,7 +19,7 @@ export interface ApplicationDefinition extends StageDefinition {
   profile: string;
 }
 
-export const project = 'noble';
+export const project = 'web';
 export const repo = 'noble-aesthetic';
 
 export const stages: StageDefinition[] = [

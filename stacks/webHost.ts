@@ -8,7 +8,6 @@ import { BlockPublicAccess, Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { NobleStackProps } from '../models/cloudResources';
 
-
 interface WebHostStackProps extends NobleStackProps {
   domainName: string;
   certificateId: string;
@@ -27,13 +26,15 @@ export class WebHostStack extends Stack {
       stack
     } = props;
 
+    const { ACCOUNT_ID, PARTITION, REGION } = Aws;
+
     const removalPolicy = isStagingEnv ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY;
 
     const hostBucket = new Bucket(this, `${project}-hostBucket-${stage}`, {
-      autoDeleteObjects: stage !== 'dev' && stage !== 'prod',
+      autoDeleteObjects: !isStagingEnv,
       cors: [
         {
-          maxAge: stage === 'prod' || stage === 'dev' ? 3000 : 0,
+          maxAge: isStagingEnv ? 3000 : 0,
           allowedMethods: [HttpMethods.GET],
           allowedOrigins: ['*'],
           allowedHeaders: ['*']
@@ -53,6 +54,8 @@ export class WebHostStack extends Stack {
       value: hostBucket.bucketName
     });
 
+    // TODO: add an edge lambda to modify routing
+
     const distribution = new Distribution(this, `${project}-siteDistribution-${stage}`, {
       comment: `${project}-webhost-${stage}`,
       defaultBehavior: {
@@ -69,7 +72,7 @@ export class WebHostStack extends Stack {
         }
       ],
       ...isStagingEnv && {
-        certificate: Certificate.fromCertificateArn(this, `${project}-certificateLookup-${stage}`, `arn:${Aws.PARTITION}:acm:${Aws.REGION}:${Aws.ACCOUNT_ID}:certificate/${certificateId}`)
+        certificate: Certificate.fromCertificateArn(this, `${project}-certificateLookup-${stage}`, `arn:${PARTITION}:acm:${REGION}:${ACCOUNT_ID}:certificate/${certificateId}`)
       },
       ...isStagingEnv && { domainNames: [domainName] }
     });
@@ -85,18 +88,16 @@ export class WebHostStack extends Stack {
       value: distribution.distributionId
     });
 
-    if (!isStagingEnv) {
-      new CfnOutput(this, `${project}-siteDistributionDomainNameOutput-${stage}`, {
-        value: distribution.distributionDomainName
-      });
-    }
-
     if (isStagingEnv) {
       const zone = HostedZone.fromLookup(this, `${project}-hostedZoneLookup-${stage}`, { domainName });
 
       new ARecord(this, `${project}-aRecord-${stage}`, {
         zone,
         target: RecordTarget.fromAlias(new CloudFrontTarget(distribution))
+      });
+    } else {
+      new CfnOutput(this, `${project}-siteDistributionDomainNameOutput-${stage}`, {
+        value: distribution.distributionDomainName
       });
     }
   }
