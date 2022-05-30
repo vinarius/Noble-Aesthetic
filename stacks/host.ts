@@ -1,20 +1,24 @@
 import { App, Aws, CfnOutput, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
-import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
+import { Distribution, LambdaEdgeEventType, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { BlockPublicAccess, Bucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
+import { resolve } from 'path';
 import { NobleStackProps } from '../models/cloudResources';
 
-interface WebHostStackProps extends NobleStackProps {
+interface HostStackProps extends NobleStackProps {
   domainName: string;
   certificateId: string;
 }
 
-export class WebHostStack extends Stack {
-  constructor(scope: App, id: string, props: WebHostStackProps) {
+export class HostStack extends Stack {
+  constructor(scope: App, id: string, props: HostStackProps) {
     super(scope, id, props);
 
     const {
@@ -54,11 +58,26 @@ export class WebHostStack extends Stack {
       value: hostBucket.bucketName
     });
 
-    // TODO: add an edge lambda to modify routing
+    const hostEdgeLambda = new NodejsFunction(this, `${project}-${stack}-hostEdgeLambda-${stage}`, {
+      functionName: `${project}-${stack}-hostEdgeLambda-${stage}`,
+      runtime: Runtime.NODEJS_16_X,
+      bundling: {
+        minify: true
+      },
+      entry: resolve(__dirname, '..', 'src', stack, 'hostEdgeLambda.ts'),
+      logRetention: isStagingEnv ? RetentionDays.TWO_YEARS : RetentionDays.THREE_DAYS,
+      projectRoot: resolve(__dirname, '..')
+    });
 
     const distribution = new Distribution(this, `${project}-siteDistribution-${stage}`, {
-      comment: `${project}-webhost-${stage}`,
+      comment: `${project}-host-${stage}`,
       defaultBehavior: {
+        edgeLambdas: [
+          {
+            eventType: LambdaEdgeEventType.VIEWER_REQUEST,
+            functionVersion: hostEdgeLambda.currentVersion
+          }
+        ],
         origin: new S3Origin(hostBucket),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
       },

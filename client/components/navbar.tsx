@@ -32,8 +32,9 @@ export default function Navbar(): ReactElement {
         })
       );
       Router.push('/login');
+    } else {
+      setIsLoggingOut(false);
     }
-    setIsLoggingOut(false);
   };
 
   return <>

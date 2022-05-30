@@ -24,8 +24,8 @@ async function setEnvVars(): Promise<void> {
     const input = isStagingEnv ? [`cdk-outputs-${stage}.json`] : ['dist', `cdk-outputs-${stage}.json`];
     const outputsPath = resolveFromRoot(...input);
     const cdkOutputsRaw = JSON.parse(readFileSync(outputsPath).toString());
-    const webAppClientId = cdkOutputsRaw[`${project}-usersStack-${stage}`][`${project}webAppClientIdOutput${stage.replace(/\W/g, '')}`];
-    const apiUrl = cdkOutputsRaw[`${project}-apiStack-${stage}`][`${project}apiUrlOutput${stage.replace(/\W/g, '')}`];
+    const webAppClientId = cdkOutputsRaw[`${project}-users-stack-${stage}`][`${project}webAppClientIdOutput${stage.replace(/\W/g, '')}`];
+    const apiUrl = cdkOutputsRaw[`${project}-api-stack-${stage}`][`${project}apiUrlOutput${stage.replace(/\W/g, '')}`];
 
     const envVars: ClientStageDefinition = {
       apiDomainName: isStagingEnv ? apiDomainName : apiUrl,

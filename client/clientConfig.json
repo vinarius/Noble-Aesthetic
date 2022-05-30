@@ -1,10 +1,1 @@
-{
-  "dev": {
-    "apiDomainName": "api.dev.nobleaesthetic.com",
-    "webAppClientId": "41d60e217act5tg82hj31qipj1"
-  },
-  "prod": {
-    "apiDomainName": "api.nobleaesthetic.com",
-    "webAppClientId": ""
-  }
-}
+{"dev":{"apiDomainName":"api.dev.nobleaesthetic.com","webAppClientId":"41d60e217act5tg82hj31qipj1"},"prod":{"apiDomainName":"api.nobleaesthetic.com","webAppClientId":""},"about-page":{"apiDomainName":"https://ubb0com8qk.execute-api.us-east-1.amazonaws.com/about-page/","webAppClientId":"3gt1lad552ahmleot0fc19mjn1"}}

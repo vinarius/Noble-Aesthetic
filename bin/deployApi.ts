@@ -18,7 +18,7 @@ export async function deployApi(): Promise<void> {
     const input = isStagingEnv ? [`cdk-outputs-${stage}.json`] : ['dist', `cdk-outputs-${stage}.json`];
     const cdkOutputsPath = resolveFromRoot(...input);
     const cdkOutputsRaw = JSON.parse(readFileSync(cdkOutputsPath).toString());
-    const restApiId = cdkOutputsRaw[`${project}-apiStack-${stage}`][`${project}apiIdOutput${stage.replace(/\W/g, '')}`];
+    const restApiId = cdkOutputsRaw[`${project}-api-stack-${stage}`][`${project}apiIdOutput${stage.replace(/\W/g, '')}`];
 
     spawn(`aws apigateway create-deployment --rest-api-id ${restApiId} --stage-name ${stage} ${includeProfile} --region ${env.region}`);
 

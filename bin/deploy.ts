@@ -17,7 +17,9 @@ export async function deploy(): Promise<void> {
     console.log(`\n>>> Synthesizing '${branch}' branch for deployment to ${alias} account`);
 
     const stackName: string = STACK || '--all';
+    console.time('deploy time');
     spawn(`npm run cdk -- deploy ${stackName} --require-approval never ${profileFlag} ${outputsFlag}`);
+    console.timeEnd('deploy time');
   } catch (error) {
     const { name, message } = error as Error;
     console.error(`${name}: ${message}`);

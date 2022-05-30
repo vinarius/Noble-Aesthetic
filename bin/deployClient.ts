@@ -27,8 +27,8 @@ async function syncHostBucket() {
 
     const outputsPath = resolveFromRoot(isStagingEnv ? `cdk-outputs-${stage}.json` : 'dist', `cdk-outputs-${stage}.json`);
     const cdkOutputsRaw = JSON.parse(readFileSync(outputsPath).toString());
-    const hostBucketName = cdkOutputsRaw[`${project}-WebHostStack-${stage}`][`${project}hostBucketNameOutput${stage.replace(/\W/g, '')}`];
-    const distributionId = cdkOutputsRaw[`${project}-WebHostStack-${stage}`][`${project}siteDistributionIdOutput${stage.replace(/\W/g, '')}`];
+    const hostBucketName = cdkOutputsRaw[`${project}-host-stack-${stage}`][`${project}hostBucketNameOutput${stage.replace(/\W/g, '')}`];
+    const distributionId = cdkOutputsRaw[`${project}-host-stack-${stage}`][`${project}siteDistributionIdOutput${stage.replace(/\W/g, '')}`];
 
     await sync(resolveFromRoot('dist', 'client'), `s3://${hostBucketName}`, {
       del: true,

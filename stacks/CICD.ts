@@ -20,8 +20,8 @@ export class CICDStack extends Stack {
 
     const { PARTITION, ACCOUNT_ID } = Aws;
 
-    const hostBucketArn = StringParameter.fromStringParameterName(this, `${project}-${stack}-hostBucketArnParam-${stage}`, `/${project}/webhost/hostbucketArn/${stage}`).stringValue;
-    const siteDistributionId = StringParameter.fromStringParameterName(this, `${project}-${stack}-siteDistributionIdParam-${stage}`, `/${project}/webhost/siteDistributionId/${stage}`).stringValue;
+    const hostBucketArn = StringParameter.fromStringParameterName(this, `${project}-${stack}-hostBucketArnParam-${stage}`, `/${project}/host/hostbucketArn/${stage}`).stringValue;
+    const siteDistributionId = StringParameter.fromStringParameterName(this, `${project}-${stack}-siteDistributionIdParam-${stage}`, `/${project}/host/siteDistributionId/${stage}`).stringValue;
 
     new Project(this, `${project}-codeBuildProject-${stage}`, {
       projectName: `${project}-codeBuildProject-${stage}`,

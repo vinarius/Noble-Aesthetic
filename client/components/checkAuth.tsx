@@ -8,7 +8,6 @@ import { useAppDispatch, useAppSelector } from '../appState/store';
 import { stage } from '../getConfig';
 import Login from '../pages/login';
 import Footer from './footer';
-import Loading from './loading';
 import Navbar from './navbar';
 
 type CheckAuthProps = Pick<AppProps, 'Component' | 'pageProps'>;
@@ -40,15 +39,15 @@ export default function CheckAuth({ Component, pageProps }: CheckAuthProps): Rea
     return <Login />;
   }
 
-  if (pathname === '/_error') {
-    console.log('error');
-    router.replace('/');
-    return <Loading />;
-  }
+  // if (pathname === '/_error') {
+  //   console.log('error');
+  //   router.replace('/');
+  //   return <Loading />;
+  // }
 
-  if (document.location.pathname !== pathname) {
-    document.location.pathname = pathname;
-  }
+  // if (document.location.pathname !== pathname) {
+  //   document.location.pathname = pathname;
+  // }
 
   return <>
     {isLoggedIn && <Navbar />}

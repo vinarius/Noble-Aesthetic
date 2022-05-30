@@ -4,8 +4,8 @@ import { getAppConfig } from '../lib/getAppConfig';
 import { validateAwsProfile } from '../lib/validateAwsProfile';
 import { ApiStack } from '../stacks/api';
 import { CICDStack } from '../stacks/CICD';
+import { HostStack } from '../stacks/host';
 import { UsersStack } from '../stacks/users';
-import { WebHostStack } from '../stacks/webHost';
 
 async function buildInfrastructure(): Promise<void> {
   const { IS_JEST, IS_CODEBUILD } = process.env;
@@ -35,17 +35,17 @@ async function buildInfrastructure(): Promise<void> {
       isStagingEnv
     };
 
-    const webhostStack = new WebHostStack(app, `${project}-webhost-stack-${stage}`, {
+    const hostStack = new HostStack(app, `${project}-host-stack-${stage}`, {
       ...stackProps,
-      stackName: `${project}-WebHost-stack-${stage}`,
-      stack: 'webhost',
+      stackName: `${project}-host-stack-${stage}`,
+      stack: 'host',
       domainName,
       certificateId
     });
 
     const apiStack = new ApiStack(app, `${project}-api-stack-${stage}`, {
       ...stackProps,
-      stackName: `${project}-apiStack-stack-${stage}`,
+      stackName: `${project}-api-stack-${stage}`,
       stack: 'api',
       certificateId,
       apiDomainName,
@@ -63,12 +63,12 @@ async function buildInfrastructure(): Promise<void> {
     if (stage === 'prod') {
       const cicdStack = new CICDStack(app, `${project}-cicd-stack-${stage}`, {
         ...stackProps,
-        stackName: `${project}-CICD-stack-${stage}`,
+        stackName: `${project}-cicd-stack-${stage}`,
         stack: 'cicd',
         branch
       });
 
-      cicdStack.addDependency(webhostStack);
+      cicdStack.addDependency(hostStack);
     }
 
     app.synth();

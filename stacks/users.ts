@@ -262,8 +262,7 @@ export class UsersStack extends Stack {
       {
         name: 'login',
         api: {
-          httpMethod: HttpMethod.POST,
-          isAuthNeeded: false
+          httpMethod: HttpMethod.POST
         },
         environment: {
           usersTableName: usersTable.tableName,
@@ -332,8 +331,7 @@ export class UsersStack extends Stack {
       {
         name: 'signUp',
         api: {
-          httpMethod: HttpMethod.POST,
-          isAuthNeeded: false
+          httpMethod: HttpMethod.POST
         },
         environment: {
           webAppClientId: webAppClient.userPoolClientId

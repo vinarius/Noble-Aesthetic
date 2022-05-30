@@ -9,7 +9,7 @@ export interface LambdaDefinition extends Partial<NodejsFunctionProps> {
   api?: {
     httpMethod: HttpMethod;
     customApiPath?: string;
-    isAuthNeeded: boolean;
+    isAuthNeeded?: boolean;
     isBaseResource?: boolean;
   };
   loggingLevel?: 'error' | 'warn' | 'info' | 'debug';
